@@ -31,6 +31,7 @@ class worker_data_builder : public QObject
 public:
     explicit worker_data_builder(QObject *parent = nullptr);
     void get_new_data();
+    ~worker_data_builder();
 private:
     WORKER worker;
     miner_json_reader *reader;
@@ -42,6 +43,7 @@ private:
     void gminer_json_parcer();
 signals:
     void signal_accept_json(QJsonObject);
+    void signal_send_worker_data(WORKER);
 private slots:
     void slot_transfer(QJsonObject);
 };

@@ -10,6 +10,7 @@ CONFIG -= app_bundle
 SOURCES += \
         config.cpp \
         config_struct.cpp \
+        data_builder_th.cpp \
         requests_info/cpu.cpp \
         requests_info/disk.cpp \
         gpu_struct.cpp \
@@ -25,6 +26,8 @@ SOURCES += \
         requests_info/radeon.cpp \
         requests_info/ram.cpp \
         requests_info/startup_timer.cpp \
+        socket.cpp \
+        socket_th.cpp \
         worker_data_builder.cpp \
         worker_struct.cpp
 
@@ -35,6 +38,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     config.h \
+    data_builder_th.h \
     requests_info/cpu.h \
     requests_info/disk.h \
     requests_info/gpu_collector.h \
@@ -48,4 +52,6 @@ HEADERS += \
     requests_info/radeon.h \
     requests_info/ram.h \
     requests_info/startup_timer.h \
+    socket.h \
+    socket_th.h \
     worker_data_builder.h

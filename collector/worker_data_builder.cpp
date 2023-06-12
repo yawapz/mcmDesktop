@@ -8,20 +8,20 @@ worker_data_builder::worker_data_builder(QObject *parent)
 
 void worker_data_builder::get_new_data()
 {
-    this->reader = new miner_json_reader(); // в поток
+    this->reader = new miner_json_reader();
 
     motherboard motherboard;
     cpu cpu;
     mac mac;
     ram ram;
     disk disk;
-    ip ip; // в поток
+    ip ip;
     kernel kernel;
     nvidia nvidia;
     radeon radeon;
     load_average LA;
     startup_timer timer;
-    gpu_collector *arr = new gpu_collector(); // в поток
+    gpu_collector *arr = new gpu_collector();
 
     connect(reader, SIGNAL(signal_transport_json(QJsonObject)), this, SLOT(slot_transfer(QJsonObject)));
     connect(reader, SIGNAL(signal_transport_json(QJsonObject)), arr, SIGNAL(signal_json_delivered(QJsonObject)));
@@ -64,6 +64,13 @@ void worker_data_builder::get_new_data()
     // server data
     this->worker.status = true;
     this->worker.last_online = 0;
+
+    emit signal_send_worker_data(this->worker);
+}
+
+worker_data_builder::~worker_data_builder()
+{
+    delete this->reader;
 }
 
 void worker_data_builder::choice_parcer()

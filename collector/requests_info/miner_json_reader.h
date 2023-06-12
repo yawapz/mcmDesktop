@@ -20,6 +20,7 @@ class miner_json_reader : public QObject
 public:
     explicit miner_json_reader(QObject *parent = nullptr);
     void get_miner_json();
+    ~miner_json_reader();
 private:
     int port = 10050;
     QNetworkAccessManager* manager;

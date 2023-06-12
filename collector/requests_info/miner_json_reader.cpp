@@ -33,6 +33,11 @@ void miner_json_reader::get_miner_json()
     this->manager->get(req);
 }
 
+miner_json_reader::~miner_json_reader()
+{
+    delete this->manager;
+}
+
 void miner_json_reader::read_reply(QNetworkReply *reply)
 {
     if(reply->error() != QNetworkReply::NoError)
