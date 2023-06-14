@@ -32,5 +32,7 @@ QString cpu::linux_terminal(QString &request)
     QProcess *cmd = new QProcess();
     cmd->start("bash", QStringList() << "-c" << request);
     cmd->waitForFinished();
-    return cmd->readAll().data();
+    QString result = cmd->readAll().data();
+    cmd->deleteLater();
+    return result;
 }

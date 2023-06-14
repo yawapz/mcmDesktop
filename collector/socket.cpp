@@ -3,10 +3,10 @@
 socket::socket(QObject *parent)
     : QTcpSocket{parent}
 {
-    QObject::connect(this, SIGNAL(signal_new_worker_data(WORKER)), this, SLOT(slot_accept_worker_data(WORKER)));
+    QObject::connect(this, SIGNAL(signal_new_worker_data(WORKER)), this, SLOT(slot_send_worker_data(WORKER)));
 }
 
-void socket::slot_accept_worker_data(WORKER inc_worker)
+void socket::slot_send_worker_data(WORKER inc_worker)
 {
     config lconf;
     conf_data conf = lconf.get_conf();
@@ -18,6 +18,8 @@ void socket::slot_accept_worker_data(WORKER inc_worker)
 
     QByteArray *barr = new QByteArray();
     QDataStream stream(barr, QIODevice::Append);
+    QString command = "inc_worker_data";
+    stream << command;
     stream << worker;
 
     this->connectToHost(conf.server_addr, conf.server_port);

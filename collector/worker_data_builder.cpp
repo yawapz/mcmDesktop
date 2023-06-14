@@ -1,4 +1,5 @@
 #include "worker_data_builder.h"
+#include <QTimer>
 
 worker_data_builder::worker_data_builder(QObject *parent)
     : QObject{parent}
@@ -27,6 +28,13 @@ void worker_data_builder::get_new_data()
     connect(reader, SIGNAL(signal_transport_json(QJsonObject)), arr, SIGNAL(signal_json_delivered(QJsonObject)));
 
     this->reader->get_miner_json();
+    QEventLoop *loop = new QEventLoop;
+    QTimer t;
+    t.connect(&t, &QTimer::timeout, loop, &QEventLoop::quit);
+    t.connect(arr, SIGNAL(signal_json_delivered(QJsonObject)), loop, SLOT(quit()));
+    t.start(3000);
+    loop->exec();
+    loop->deleteLater();
 
     // system data
     this->worker.motherboard_data = motherboard.get_info();
@@ -43,7 +51,7 @@ void worker_data_builder::get_new_data()
 
     this->worker.disk_free_space = disk.get_disk_free();
     this->worker.disk_model = disk.get_disk_name();
-    this->worker.disk_size = disk.get_disk_free();
+    this->worker.disk_size = disk.get_disk_total();
 
     this->worker.RAM_free = ram.get_ram_free();
     this->worker.RAM_total = ram.get_ram_total();
@@ -65,7 +73,11 @@ void worker_data_builder::get_new_data()
     this->worker.status = true;
     this->worker.last_online = 0;
 
+
+
     emit signal_send_worker_data(this->worker);
+    qDebug() << this->json;
+    arr->deleteLater();
 }
 
 worker_data_builder::~worker_data_builder()

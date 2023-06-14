@@ -29,11 +29,11 @@ disk::disk()
         this->disk_used = QString::number((str_disk_used.toDouble() / 1024), 'f', 2) + " GiB";
 
     this->request3 = "df / -m | grep dev | gawk '{print $4}'";
-    QString str_disk_free= this->linux_terminal(this->request3);
+    QString str_disk_free = this->linux_terminal(this->request3);
     if(str_disk_free.toInt() < 1024)
-        this->disk_free = str_disk_used + " MiB";
+        this->disk_free = QString::number(str_disk_free.toInt()) + " MiB";
     else
-        this->disk_free = QString::number((str_disk_free.toDouble() / 1024), 'f', 2) + " GiB";
+        this->disk_free = QString::number((str_disk_free.toInt() / 1024), 'f', 2) + " GiB";
 
     double total_space = str_disk_used.toInt() + str_disk_free.toInt();
     if(total_space < 1024)
@@ -67,5 +67,7 @@ QString disk::linux_terminal(QString &request)
     QProcess *cmd = new QProcess();
     cmd->start("bash", QStringList() << "-c" << request);
     cmd->waitForFinished();
-    return cmd->readAll().data();
+    QString result = cmd->readAll().data();
+    cmd->deleteLater();
+    return result;
 }

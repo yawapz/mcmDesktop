@@ -11,7 +11,9 @@ QString miner_json_reader::linux_terminal(QString &request)
     QProcess *cmd = new QProcess();
     cmd->start("bash", QStringList() << "-c" << request);
     cmd->waitForFinished();
-    return cmd->readAll().data();
+    QString result = cmd->readAll().data();
+    cmd->deleteLater();
+    return result;
 }
 
 void miner_json_reader::get_miner_json()

@@ -17,7 +17,7 @@ signals:
     void signal_new_worker_data(WORKER);
 
 private slots:
-    void slot_accept_worker_data(WORKER);
+    void slot_send_worker_data(WORKER);
 
 };
 
