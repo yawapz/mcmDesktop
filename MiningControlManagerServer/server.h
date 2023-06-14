@@ -11,6 +11,13 @@
 #include <QDate>
 #include <QList>
 
+#include <QtSql>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlRecord>
+#include <QSqlResult>
+#include <QStringList>
+
 class server : public QTcpServer
 {
     Q_OBJECT
@@ -21,13 +28,14 @@ public:
 private:
     int port;
     QList<QTcpSocket*> connections;
+    QSqlDatabase DB;
 
 signals:
     //void incoming_new_worker_data(QDataStream&);
 private slots:
-    void accept_new_worker_data();
     void slot_new_connection();
     void slot_disconnected();
+    void slot_routing();
 };
 
 #endif // SERVER_H
