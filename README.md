@@ -3,3 +3,4 @@
 # Nvidia 525.105.17
 # inxi 3.3.13
 # Gminer 3.37
+# PostgreSQL 12.15
