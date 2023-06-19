@@ -1,11 +1,10 @@
 #include <QCoreApplication>
-#include "server.h"
+#include "server_th.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-
-    server *serv = new server(48048);
-
+    server_th server;
+    server.run();
     return a.exec();
 }
