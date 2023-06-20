@@ -12,6 +12,9 @@ gui_farm_list_area::gui_farm_list_area(QWidget *parent)
     this->rig_info_panel = new QHBoxLayout();
 
     this->farm_info_arr  = new gui_farm_info_area();
+    this->user_settings = new gui_user_settings();
+    QObject::connect(this, SIGNAL(signal_show_user_settings()), user_settings, SLOT(show()));
+    QObject::connect(this, SIGNAL(signal_exit_prog()), user_settings, SLOT(close()));
     QObject::connect(this, &gui_farm_list_area::send_authorization_data, this->farm_info_arr,  &gui_farm_info_area::signal_accept_data);
 
 
@@ -69,7 +72,8 @@ void gui_farm_list_area::build_top_button_panel()
     QMenu *user_button_menu = new QMenu(user_button);
     user_button_menu->setPalette(pal);
     user_button_menu->setCursor(Qt::PointingHandCursor);
-    user_button_menu->addAction("Settings");
+    user_button_menu->addAction("User settings");
+    user_button_menu->addAction("Worker settings");
     user_button_menu->addAction("Change user");
     user_button_menu->addAction("Exit");
 
@@ -283,7 +287,6 @@ bool gui_farm_list_area::eventFilter(QObject *obj, QEvent *event)
 void gui_farm_list_area::closeEvent(QCloseEvent *event)
 {
     emit this->signal_exit_prog();
-    //event->accept;
 }
 
 void gui_farm_list_area::accept_authorization_data(QString log, QString pw, user_data new_data)
@@ -319,6 +322,14 @@ void gui_farm_list_area::TopMenuEvent(QAction* act)
     {
         qApp->quit();
         QProcess::startDetached(qApp->applicationFilePath(), QStringList());
+    }
+    else if(act->text() == "User settings")
+    {
+        emit signal_show_user_settings();
+    }
+    else if(act->text() == "Worker settings")
+    {
+
     }
 }
 

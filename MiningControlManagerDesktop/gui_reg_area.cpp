@@ -58,12 +58,110 @@ gui_reg_area::gui_reg_area(QWidget *parent)
     main_lay->addLayout(main_lay_bottom);
 
     this->setLayout(main_lay);
+    this->soc = new QTcpSocket();
+    QObject::connect(soc, SIGNAL(readyRead()), this, SLOT(accept_result()));
+}
+
+gui_reg_area::~gui_reg_area()
+{
+    this->login->deleteLater();
+    this->password->deleteLater();
+    this->soc->deleteLater();
 }
 
 void gui_reg_area::on_click_send_button()
 {
-    qDebug() << "Реализовать ограничения по знакам и паролю!";
-    qDebug() << "Реализовать отправку и регистрацию юзера на сервере!";
+    if(login->text().contains('@') && login->text().contains('.'))
+    {
+        QByteArray *barr = new QByteArray();
+        QDataStream stream(barr, QIODevice::Append);
+        QString command = "new_user";
+        stream << command;
+
+        QString user_login = this->login->text();
+        QString user_password = this->password->text();
+        stream << user_login;
+        stream << user_password;
+
+        this->setEnabled(false);
+        this->soc->connectToHost("127.0.0.1", 48048);
+        this->soc->waitForConnected(1000);
+        this->soc->write(*barr);
+        this->soc->flush();
+        delete barr;
+    }
+    else
+    {
+        this->setEnabled(false);
+        this->login->clear();
+        this->password->clear();
+        QDialog *win = new QDialog();
+        win->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+        QScreen *screen = QApplication::screens().at(0);
+        QSize size = screen->availableSize();
+        win->move(size.width()/2 - 125 + 33, size.height()/2 - 110 + 80);
+        QVBoxLayout *lay = new QVBoxLayout();
+        QLabel *label = new QLabel("Please enter Email!");
+        label->setStyleSheet("QLabel {color : red;}");
+        QPushButton *button = new QPushButton("OK");
+        QObject::connect(button, SIGNAL(clicked()), win, SLOT(close()));
+        QObject::connect(button, SIGNAL(clicked()), this, SLOT(unlock_form()));
+        lay->addWidget(label);
+        lay->addWidget(button);
+        win->setLayout(lay);
+        win->show();
+    }
+}
+
+void gui_reg_area::accept_result()
+{
+    soc->waitForReadyRead(1000);
+    QString req = "no";
+    QByteArray barr = soc->readAll();
+    QDataStream stream(&barr, QIODevice::ReadOnly);
+    stream >> req;
+
+    QDialog *win = new QDialog();
+    win->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+    QScreen *screen = QApplication::screens().at(0);
+    QSize size = screen->availableSize();
+    win->move(size.width()/2 - 125 + 60, size.height()/2 - 110 + 80);
+    QVBoxLayout *lay = new QVBoxLayout();
+    QLabel *label = new QLabel();
+    QPushButton *button = new QPushButton("OK");
+    QObject::connect(button, SIGNAL(clicked()), win, SLOT(close()));
+    if(req == "yes")
+    {
+        QObject::connect(button, SIGNAL(clicked()), this, SLOT(restart_programm()));
+        label->setStyleSheet("QLabel {color : green;}");
+        label->setText("Successfully");
+        lay->addWidget(label);
+        lay->addWidget(button);
+        win->setLayout(lay);
+        win->show();
+    }
+    else
+    {
+        this->setEnabled(true);
+        this->login->clear();
+        this->password->clear();
+        label->setStyleSheet("QLabel {color : red;}");
+        label->setText("Unsuccessful");
+        lay->addWidget(label);
+        lay->addWidget(button);
+        win->setLayout(lay);
+        win->show();
+    }
+    soc->waitForDisconnected(1000);
+}
+
+void gui_reg_area::restart_programm()
+{
     qApp->quit();
     QProcess::startDetached(qApp->applicationFilePath(), QStringList());
+}
+
+void gui_reg_area::unlock_form()
+{
+    this->setEnabled(true);
 }

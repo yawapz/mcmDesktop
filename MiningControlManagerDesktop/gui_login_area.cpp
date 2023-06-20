@@ -53,18 +53,47 @@ gui_login_area::gui_login_area(QWidget *parent)
 
         this->log = new thread_logger();
                 this->log->start();
+
+        this->access = false;
+        this->soc = new QTcpSocket();
+        QObject::connect(soc, SIGNAL(readyRead()), this, SLOT(access_checker()));
 }
 
 gui_login_area::~gui_login_area()
 {
+    soc->deleteLater();
 }
 
 void gui_login_area::authorization()
 {
-    qDebug() << "Реализовать Аунтификацию через сервер!";
-    qDebug() << "Получить данные - ID_key с сервера!";
-    bool test = true;
-    if(test)
+    QByteArray *barr = new QByteArray();
+    QDataStream stream(barr, QIODevice::Append);
+    QString command = "login";
+    stream << command;
+
+    QString user_login = this->login_line->text();
+    QString user_password = this->pw_line->text();
+    stream << user_login;
+    stream << user_password;
+
+    if(!soc->isOpen())
+        soc->connectToHost("127.0.0.1", 48048);
+    soc->waitForConnected(1000);
+    soc->write(*barr);
+    soc->flush();
+    delete barr;
+
+    this->setEnabled(false);
+
+    QEventLoop *loop = new QEventLoop;
+    QTimer t;
+    t.connect(&t, &QTimer::timeout, loop, &QEventLoop::quit);
+    t.connect(soc, SIGNAL(readyRead()), loop, SLOT(quit()));
+    t.start(5*1000); // 5 sec
+    loop->exec();
+    loop->deleteLater();
+
+    if(this->access)
     {
         qDebug() << "Получить данные из БД сервера для воркеров!";
         // Перенос данных в следующее окно после успешной авторизации + возможно добавить ключ шифрования на сессию
@@ -81,11 +110,11 @@ void gui_login_area::authorization()
     }
     else
     {
+        this->setEnabled(true);
         this->pw_line->clear();
         this->resault->setStyleSheet("QLabel {color : red;}");
         this->resault->setText("Error");
         emit this->log->signal_write_to_logfile("Error authorization for " + this->login_line->text());
-
     }
     this->log->quit();
 }
@@ -100,4 +129,24 @@ void gui_login_area::registration()
 {
     QObject::connect(this, SIGNAL(call_reg_form()), parent(), SLOT(call_reg_form()));
     emit this->call_reg_form();
+}
+
+void gui_login_area::access_checker()
+{
+    soc->waitForReadyRead(1000);
+    QString req = "no";
+
+    QByteArray barr = soc->readAll();
+    QDataStream stream(&barr, QIODevice::ReadOnly);
+    stream >> req;
+
+    if(req == "yes")
+    {
+        this->access = true;
+    }
+    else
+    {
+        this->access = false;
+    }
+    soc->waitForDisconnected(1000);
 }

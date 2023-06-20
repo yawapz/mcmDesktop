@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,6 +16,7 @@ SOURCES += \
     gui_farm_list_worker.cpp \
     gui_login_area.cpp \
     gui_reg_area.cpp \
+    gui_user_settings.cpp \
     logger/prog_logger.cpp \
     logger/thread_logger.cpp \
     main.cpp \
@@ -31,6 +32,7 @@ HEADERS += \
     gui_farm_list_worker.h \
     gui_login_area.h \
     gui_reg_area.h \
+    gui_user_settings.h \
     logger/prog_logger.h \
     logger/thread_logger.h \
     mainwindow.h \

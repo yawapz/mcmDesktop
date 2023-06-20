@@ -22,6 +22,7 @@
 #include "qapplication.h"
 #include "qscreen.h"
 #include <QDebug>
+#include "gui_user_settings.h"
 
 class gui_farm_list_area : public QWidget
 {
@@ -35,6 +36,7 @@ public:
 private:
 
     gui_farm_info_area *farm_info_arr;
+    gui_user_settings *user_settings;
 
     QString login;
     QString password;
@@ -74,6 +76,7 @@ signals:
     void send_authorization_data(QString, QString, user_data);
     void signal_workerinfo_sender(QString);
     void signal_exit_prog();
+    void signal_show_user_settings();
 
 };
 

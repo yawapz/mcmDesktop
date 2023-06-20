@@ -12,6 +12,9 @@
 #include <QLineEdit>
 #include <QStyle>
 #include <QThread>
+#include <QTcpSocket>
+#include <QEventLoop>
+#include <QTimer>
 
 class gui_login_area : public QWidget
 {
@@ -21,17 +24,20 @@ public:
     ~gui_login_area();
 
 private:
+    QTcpSocket *soc;
     QLabel* resault;
     QLineEdit* login_line;
     QLineEdit* pw_line;
 
     thread_logger *log;
+    bool access;
 
 private slots:
     void authorization();
     void gui_transit();
 
     void registration();
+    void access_checker();
 
 signals:
     void call_farm_list_form();
