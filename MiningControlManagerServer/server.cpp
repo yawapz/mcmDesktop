@@ -3,17 +3,17 @@
 server::server(int port)
 {
     this->DB = QSqlDatabase::addDatabase("QPSQL");
-    DB.setHostName("**************************");
-    DB.setDatabaseName("***********************");
+    DB.setHostName("***************************");
+    DB.setDatabaseName("*******************");
     DB.setPort(5432);
-    DB.setUserName("******************************");
-    DB.setPassword("*************************************");
+    DB.setUserName("***************************");
+    DB.setPassword("*******************************");
 
     if(DB.open())
     {
         qDebug() << "DB connected!" << Qt::endl;
     }
-    elses
+    else
     {
         qDebug() << "DB not connected!" << Qt::endl;
     }
@@ -565,7 +565,6 @@ void server::slot_routing()
             // Отправить данные клиенту
 
             req_stream << final_JSON_object;
-            //req_stream << barr;
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -595,7 +594,6 @@ void server::slot_routing()
                 qDebug() << "successful authentication user " + user_login ;
                 // ответ об успешной аунтификации
                 req_stream << QString("yes");
-                req_stream << barr;
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -603,7 +601,6 @@ void server::slot_routing()
             {
                 // ответ отказ аунтификации
                 req_stream << QString("no");
-                req_stream << barr;
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -642,7 +639,6 @@ void server::slot_routing()
                     qDebug() << "new user " + user_login;
                     // Отправить ответ об успешном добавлении в БД
                     req_stream << QString("yes");
-                    req_stream << barr;
                     client->write(barr);
                     client->waitForConnected(1000);
                 }
@@ -651,7 +647,6 @@ void server::slot_routing()
             {
                 // Отправить ответ, что такой логин уже есть
                 req_stream << QString("busy");
-                req_stream << barr;
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -706,7 +701,6 @@ void server::slot_routing()
                         qDebug() << query.lastQuery();
                         // ответ об отказе добавлении
                         req_stream << QString("no");
-                        req_stream << barr;
                         client->write(barr);
                         client->waitForConnected(1000);
                         break;
@@ -770,7 +764,6 @@ void server::slot_routing()
                             qDebug() << query.lastQuery();
                             // ответ об отказе добавлении
                             req_stream << QString("no");
-                            req_stream << barr;
                             client->write(barr);
                             client->waitForConnected(1000);
                             break;
@@ -780,7 +773,6 @@ void server::slot_routing()
                             qDebug() << "new worker " + new_worker_id;
                             // ответ об успешном добавлении
                             req_stream << QString("yes");
-                            req_stream << barr;
                             client->write(barr);
                             client->waitForConnected(1000);
                             break;
@@ -797,7 +789,6 @@ void server::slot_routing()
         {
             // ответ об отказе добавлении
             req_stream << QString("no");
-            req_stream << barr;
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -819,7 +810,6 @@ void server::slot_routing()
             qDebug() << query.lastQuery();
             // Отказ
             req_stream << QString("no");
-            req_stream << barr;
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -833,7 +823,6 @@ void server::slot_routing()
                 qDebug() << query.lastQuery();
                 // Отказ
                 req_stream << QString("no");
-                req_stream << barr;
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -842,7 +831,6 @@ void server::slot_routing()
                 qDebug() << "Worker " + worker_id + " deleted!";
                 // Отправка положительного результата
                 req_stream << QString("yes");
-                req_stream << barr;
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -852,98 +840,123 @@ void server::slot_routing()
     {
         QString user_login = "";
         stream >> user_login;
-        // Найти все воркеры юзера
-        QString query_fnd_workers = "SELECT worker_id FROM \"WORKERS\" WHERE login = \'" + user_login + "\';";
-
         QByteArray barr;
         QDataStream req_stream(&barr, QIODevice::Append);
 
         QSqlQuery query(this->DB);
-        if(!query.exec(query_fnd_workers))
+        // Есть ли такой юзер?
+        QString query_fnd_user = " SELECT login FROM \"USERS\" WHERE login = \'" + user_login + "\';";
+        if(!query.exec(query_fnd_user))
         {
             qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
             qDebug() << query.lastQuery();
             // Ответ отказ
             req_stream << QString("no");
-            req_stream << barr;
+            client->write(barr);
+            client->waitForConnected(1000);
+        }
+        else if(query.size() == 0)
+        {
+            req_stream << QString("no");
             client->write(barr);
             client->waitForConnected(1000);
         }
         else
         {
-            bool result = false;
-            if(query.size() > 0)
+            // Найти все воркеры юзера
+            QString query_fnd_workers = "SELECT worker_id FROM \"WORKERS\" WHERE login = \'" + user_login + "\';";
+
+
+            if(!query.exec(query_fnd_workers))
             {
-                // Удалить все таблицы воркеров
-                QList<QString> query_request_fields;
-                QSqlRecord rec = query.record();
-
-                for(int i = 0 ;i < rec.count(); ++i)
+                qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
+                qDebug() << query.lastQuery();
+                // Ответ отказ
+                req_stream << QString("no");
+                client->write(barr);
+                client->waitForConnected(1000);
+            }
+            else
+            {
+                bool result = false;
+                if(query.size() > 0)
                 {
-                    QString name = rec.fieldName(i);
-                    query_request_fields.append(name);
+                    // Удалить все таблицы воркеров
+                    QList<QString> query_request_fields;
+                    QSqlRecord rec = query.record();
 
-                    int field_number = rec.indexOf(name);
-                    while(query.next())
+                    for(int i = 0 ;i < rec.count(); ++i)
                     {
-                        QString query_drop_worker_table = "DROP TABLE \"worker_" + query.value(field_number).toString() +"\";";
-                        QSqlQuery del_query(this->DB);
-                        if(!del_query.exec(query_drop_worker_table))
+                        QString name = rec.fieldName(i);
+                        query_request_fields.append(name);
+
+                        int field_number = rec.indexOf(name);
+                        while(query.next())
                         {
-                            qDebug() << "Error Query - " << del_query.lastError().type() << " - " << del_query.lastError().text();
-                            qDebug() << del_query.lastQuery();
-                            result = false;
-                        }
-                        else
-                        {
-                            result = true;
+                            QString query_drop_worker_table = "DROP TABLE \"worker_" + query.value(field_number).toString() +"\";";
+                            QSqlQuery del_query(this->DB);
+                            if(!del_query.exec(query_drop_worker_table))
+                            {
+                                qDebug() << "Error Query - " << del_query.lastError().type() << " - " << del_query.lastError().text();
+                                qDebug() << del_query.lastQuery();
+                                result = false;
+                            }
+                            else
+                            {
+                                result = true;
+                            }
                         }
                     }
-                }
-                if(result)
-                {
-                    // Удалить воркеры
-                    QString query_record_del1 = "DELETE FROM \"WORKERS\" WHERE login = \'" + user_login + "\';";
-                    if(!query.exec(query_record_del1))
+                    if(result)
                     {
-                        qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
-                        qDebug() << query.lastQuery();
-                    }
-                    else
-                    {
-                        // Удалить юзера
-                        QString query_record_del2 = "DELETE FROM \"USERS\" WHERE login = \'" + user_login + "\';";
-                        if(!query.exec(query_record_del2))
+                        // Удалить воркеры
+                        QString query_record_del1 = "DELETE FROM \"WORKERS\" WHERE login = \'" + user_login + "\';";
+                        if(!query.exec(query_record_del1))
                         {
                             qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
                             qDebug() << query.lastQuery();
                         }
                         else
                         {
-                            qDebug() << "The user " + user_login + " has been deleted!";
-                            req_stream << QString("yes");
-                            req_stream << barr;
-                            client->write(barr);
-                            client->waitForConnected(1000);
+                            // Удалить юзера
+                            QString query_record_del2 = "DELETE FROM \"USERS\" WHERE login = \'" + user_login + "\';";
+                            if(!query.exec(query_record_del2))
+                            {
+                                qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
+                                qDebug() << query.lastQuery();
+                            }
+                            else
+                            {
+                                qDebug() << "The user " + user_login + " has been deleted!";
+                                req_stream << QString("yes");
+                                client->write(barr);
+                                client->waitForConnected(1000);
+                            }
                         }
+                    }
+                    else
+                    {
+                        req_stream << QString("no");
+                        client->write(barr);
+                        client->waitForConnected(1000);
                     }
                 }
                 else
                 {
-                    req_stream << QString("no");
-                    req_stream << barr;
-                    client->write(barr);
-                    client->waitForConnected(1000);
-                }
-            }
-            else
-            {
-                // Удалить юзера
-                QString query_record_del2 = "DELETE FROM \"USERS\" WHERE login = \'" + user_login + "\';";
-                if(!query.exec(query_record_del2))
-                {
-                    qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
-                    qDebug() << query.lastQuery();
+                    // Удалить юзера
+                    QString query_record_del2 = "DELETE FROM \"USERS\" WHERE login = \'" + user_login + "\';";
+                    if(!query.exec(query_record_del2))
+                    {
+                        qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
+                        qDebug() << query.lastQuery();
+                    }
+                    else
+                    {
+                        qDebug() << "The user " + user_login + " has been deleted!";
+                        req_stream << QString("yes");
+                        client->write(barr);
+                        client->waitForConnected(1000);
+                    }
                 }
             }
         }
@@ -971,7 +984,6 @@ void server::slot_routing()
             qDebug() << query.lastQuery();
             // ответ об отменённой операции
             req_stream << QString("no");
-            req_stream << barr;
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -988,7 +1000,6 @@ void server::slot_routing()
                     qDebug() << query.lastQuery();
                     // ответ об отменённой операции
                     req_stream << QString("no");
-                    req_stream << barr;
                     client->write(barr);
                     client->waitForConnected(1000);
                 }
@@ -1004,7 +1015,6 @@ void server::slot_routing()
                         qDebug() << query.lastQuery();
                         // ответ об отменённой операции
                         req_stream << QString("no");
-                        req_stream << barr;
                         client->write(barr);
                         client->waitForConnected(1000);
                     }
@@ -1021,7 +1031,6 @@ void server::slot_routing()
                                 qDebug() << query.lastQuery();
                                 // ответ об отменённой операции
                                 req_stream << QString("no");
-                                req_stream << barr;
                                 client->write(barr);
                                 client->waitForConnected(1000);
                             }
@@ -1030,7 +1039,6 @@ void server::slot_routing()
                                 qDebug() << "successful update data for user " + new_login ;
                                 // ответ об успешной операции
                                 req_stream << QString("yes");
-                                req_stream << barr;
                                 client->write(barr);
                                 client->waitForConnected(1000);
                             }
@@ -1040,7 +1048,6 @@ void server::slot_routing()
                             qDebug() << "successful update data for user " + new_login ;
                             // ответ об успешной операции
                             req_stream << QString("yes");
-                            req_stream << barr;
                             client->write(barr);
                             client->waitForConnected(1000);
                         }
@@ -1051,7 +1058,6 @@ void server::slot_routing()
             {
                 // ответ об отменённой операции
                 req_stream << QString("no");
-                req_stream << barr;
                 client->write(barr);
                 client->waitForConnected(1000);
             }
