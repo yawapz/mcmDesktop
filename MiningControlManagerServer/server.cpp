@@ -4,10 +4,10 @@ server::server(int port)
 {
     this->DB = QSqlDatabase::addDatabase("QPSQL");
     DB.setHostName("***************************");
-    DB.setDatabaseName("*******************");
+    DB.setDatabaseName("**********************");
     DB.setPort(5432);
-    DB.setUserName("***************************");
-    DB.setPassword("*******************************");
+    DB.setUserName("***********************************");
+    DB.setPassword("*************************************");
 
     if(DB.open())
     {
@@ -839,13 +839,15 @@ void server::slot_routing()
     else if(command == "del_user")
     {
         QString user_login = "";
+        QString user_password = "";
         stream >> user_login;
+        stream >> user_password;
         QByteArray barr;
         QDataStream req_stream(&barr, QIODevice::Append);
 
         QSqlQuery query(this->DB);
         // Есть ли такой юзер?
-        QString query_fnd_user = " SELECT login FROM \"USERS\" WHERE login = \'" + user_login + "\';";
+        QString query_fnd_user = " SELECT login FROM \"USERS\" WHERE login = \'" + user_login + "\' AND password = \'" + user_password + "\';";
         if(!query.exec(query_fnd_user))
         {
             qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
@@ -865,8 +867,6 @@ void server::slot_routing()
         {
             // Найти все воркеры юзера
             QString query_fnd_workers = "SELECT worker_id FROM \"WORKERS\" WHERE login = \'" + user_login + "\';";
-
-
             if(!query.exec(query_fnd_workers))
             {
                 qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();

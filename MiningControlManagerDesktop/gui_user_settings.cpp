@@ -75,6 +75,7 @@ void gui_user_settings::slot_delete_request()
 
     stream << command;
     stream << this->current_login->text();
+    stream << this->current_password->text();
 
     if(!soc->isOpen())
         soc->connectToHost("127.0.0.1", 48048);
@@ -154,9 +155,9 @@ void gui_user_settings::slot_warning()
     QObject::connect(button1, SIGNAL(clicked()), this, SLOT(slot_delete_request()));
     QObject::connect(button2, SIGNAL(clicked()), win, SLOT(close()));
     QObject::connect(button2, SIGNAL(clicked()), this, SLOT(slot_unlock_form()));
-    if(this->current_login->text().isEmpty())
+    if(this->current_login->text().isEmpty() || this->current_password->text().isEmpty())
     {
-        label->setText("Please enter your current login");
+        label->setText("Please enter your current login\n and your current password");
         lay2->addWidget(button2);
         win->move(size.width()/2 - 140, size.height()/2 - 110 + 80);
     }
