@@ -23,6 +23,7 @@
 #include "qscreen.h"
 #include <QDebug>
 #include "gui_user_settings.h"
+#include "thread_refresh_data.h"
 
 class gui_farm_list_area : public QWidget
 {
@@ -34,7 +35,7 @@ public:
 
 
 private:
-
+    thread_refresh_data *refresher;
     gui_farm_info_area *farm_info_arr;
     gui_user_settings *user_settings;
 
@@ -68,15 +69,29 @@ public slots:
 
 private slots:
     //void clicked_on_refresh_button();
+    void slot_accept_new_user_data(user_data);
     void TopMenuEvent(QAction*);
-
-
 
 signals:
     void send_authorization_data(QString, QString, user_data);
     void signal_workerinfo_sender(QString);
     void signal_exit_prog();
     void signal_show_user_settings();
+    void signal_ready_update(QString, QString, user_data);
+
+private:
+    unsigned short int grand_panel_base_height;
+    QGridLayout *H_block;
+
+    QLabel *total_rig_panel;
+    QLabel *total_gpu_panel;
+    QLabel *total_power_usage_panel;
+    QVBoxLayout *v_rig_main_panel;
+
+    //block
+    QString block_style;
+    int label_fix_h;
+    int label_fix_w;
 
 };
 

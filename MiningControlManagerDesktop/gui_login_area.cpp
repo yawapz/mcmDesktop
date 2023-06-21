@@ -56,12 +56,18 @@ gui_login_area::gui_login_area(QWidget *parent)
 
         this->access = false;
         this->soc = new QTcpSocket();
+        this->soc2 = new QTcpSocket();
+        this->data = new user_data();
         QObject::connect(soc, SIGNAL(readyRead()), this, SLOT(access_checker()));
+        QObject::connect(soc2, SIGNAL(readyRead()), this, SLOT(accept_json()));
 }
 
 gui_login_area::~gui_login_area()
 {
     soc->deleteLater();
+    soc2->deleteLater();
+    log->deleteLater();
+    data->deleteLater();
 }
 
 void gui_login_area::authorization()
@@ -95,10 +101,29 @@ void gui_login_area::authorization()
 
     if(this->access)
     {
-        qDebug() << "Получить данные из БД сервера для воркеров!";
+        QByteArray *barr2 = new QByteArray();
+        QDataStream stream(barr2, QIODevice::Append);
+        QString command = "get_user_data";
+        QString login = this->login_line->text();
+
+        stream << command;
+        stream << login;
+        if(!soc2->isOpen())
+            soc2->connectToHost("127.0.0.1", 48048);
+        soc2->waitForConnected(1000);
+        soc2->write(*barr2);
+        soc2->flush();
+        delete barr2;
+
+        QEventLoop *loop2 = new QEventLoop;
+        QTimer t2;
+        t2.connect(&t2, &QTimer::timeout, loop2, &QEventLoop::quit);
+        t2.connect(soc2, SIGNAL(readyRead()), loop2, SLOT(quit()));
+        t2.start(5*1000); // 5 sec
+        loop2->exec();
+        loop2->deleteLater();
         // Перенос данных в следующее окно после успешной авторизации + возможно добавить ключ шифрования на сессию
-        user_data *data = new user_data();
-        data->JSON_from_local_directory_file();
+        //data->JSON_from_local_directory_file();
         data->JSON_server_to_desktop_parcer();
 
 
@@ -149,4 +174,15 @@ void gui_login_area::access_checker()
         this->access = false;
     }
     soc->waitForDisconnected(1000);
+}
+
+void gui_login_area::accept_json()
+{
+    soc2->waitForReadyRead(1000);
+    QByteArray barr = soc2->readAll();
+    QDataStream stream(&barr, QIODevice::ReadOnly);
+    QJsonObject jsonObject;
+    stream >> jsonObject;
+    this->data->main_json_file = jsonObject;
+    soc2->waitForDisconnected(1000);
 }

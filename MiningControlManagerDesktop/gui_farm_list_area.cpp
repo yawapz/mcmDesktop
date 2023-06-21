@@ -3,6 +3,9 @@
 gui_farm_list_area::gui_farm_list_area(QWidget *parent)
     : QWidget{parent}
 {
+    this->refresher = new thread_refresh_data();
+    QObject::connect(this, &gui_farm_list_area::send_authorization_data, refresher,  &thread_refresh_data::signal_accept_data);
+    QObject::connect(refresher, SIGNAL(signal_send_new_data(user_data)), this, SLOT(slot_accept_new_user_data(user_data)));
     this->main_area = new QVBoxLayout();
     this->top_button_panel = new QWidget();
     this->grand_info_panel = new QWidget();
@@ -13,6 +16,7 @@ gui_farm_list_area::gui_farm_list_area(QWidget *parent)
 
     this->farm_info_arr  = new gui_farm_info_area();
     this->user_settings = new gui_user_settings();
+    QObject::connect(this, SIGNAL(signal_exit_prog()), user_settings, SIGNAL(signal_exit_prog()));
     QObject::connect(this, SIGNAL(signal_show_user_settings()), user_settings, SLOT(show()));
     QObject::connect(this, SIGNAL(signal_exit_prog()), user_settings, SLOT(close()));
     QObject::connect(this, &gui_farm_list_area::send_authorization_data, this->farm_info_arr,  &gui_farm_info_area::signal_accept_data);
@@ -41,6 +45,21 @@ gui_farm_list_area::gui_farm_list_area(QWidget *parent)
 
 gui_farm_list_area::~gui_farm_list_area()
 {
+    this->refresher->deleteLater();
+    this->main_area->deleteLater();
+    this->top_button_panel->deleteLater();
+    this->grand_info_panel->deleteLater();
+    this->text_button_panel->deleteLater();
+    this->sort_button_panel->deleteLater();
+    this->v_rig_main_panel_widget->deleteLater();
+    this->rig_info_panel->deleteLater();
+    this->farm_info_arr->deleteLater();
+    this->user_settings->deleteLater();
+    this->H_block->deleteLater();
+    this->total_rig_panel->deleteLater();
+    this->total_gpu_panel->deleteLater();
+    this->total_power_usage_panel->deleteLater();
+    this->v_rig_main_panel->deleteLater();
 }
 
 void gui_farm_list_area::build_top_button_panel()
@@ -87,6 +106,9 @@ void gui_farm_list_area::build_top_button_panel()
 //--------------------------------------------------------------------------------------------------------
         // кнопка refresh
     QPushButton *refresh_button = new QPushButton();
+    QObject::connect(refresh_button, SIGNAL(clicked(bool)), refresher, SLOT(run()));
+    //refresh_button->setAutoDefault(false);
+
     refresh_button->setCursor(Qt::PointingHandCursor);
     QPixmap *icon = new QPixmap("res/refresh.svg");
     QPainter qp = QPainter(icon);
@@ -109,6 +131,7 @@ void gui_farm_list_area::build_top_button_panel()
 //--------------------------------------------------------------------------------------------------------
     // Настройки блока
     left->addWidget(logo);
+
     right->addWidget(refresh_button);
     right->addWidget(user_button);
     top_block->addLayout(left, 0);
@@ -118,8 +141,8 @@ void gui_farm_list_area::build_top_button_panel()
 
 void gui_farm_list_area::build_grand_info_panel()
 {
-    unsigned short int grand_panel_base_height = 94;
-    QGridLayout *H_block = new QGridLayout(this->grand_info_panel);
+    grand_panel_base_height = 94;
+    H_block = new QGridLayout(this->grand_info_panel);
     H_block->setColumnMinimumWidth(7, 160);
     H_block->setRowMinimumHeight(0, 80);
     //QHBoxLayout *H_block = new QHBoxLayout(this->grand_info_panel);
@@ -128,16 +151,16 @@ void gui_farm_list_area::build_grand_info_panel()
     H_block->setMargin(15);
     H_block->setAlignment(Qt::AlignmentFlag::AlignTop | Qt::AlignmentFlag::AlignLeft);
     this->grand_info_panel->setStyleSheet("background-color: #1d2125");
-    QString block_style = "QLabel {color: white; background-color: #262b31; padding: 10px 10px 10px 10px; border-radius: 5px; margin: 0px 5px 0px 5px};";
-    int label_fix_h = 65;
-    int label_fix_w = 150;
-    QLabel *total_rig_panel = new QLabel();
+    block_style = "QLabel {color: white; background-color: #262b31; padding: 10px 10px 10px 10px; border-radius: 5px; margin: 0px 5px 0px 5px};";
+    label_fix_h = 65;
+    label_fix_w = 150;
+    total_rig_panel = new QLabel();
     total_rig_panel->setFixedHeight(label_fix_h);
     total_rig_panel->setFixedWidth(label_fix_w);
     total_rig_panel->setAlignment(Qt::AlignmentFlag::AlignCenter);
     total_rig_panel->setStyleSheet(block_style);
     total_rig_panel->setText(QString::number(this->data.getTotal_count_WORKERs()) + "\nWORKERS");
-    QLabel *total_gpu_panel = new QLabel();
+    total_gpu_panel = new QLabel();
     total_gpu_panel->setFixedHeight(label_fix_h);
     total_gpu_panel->setFixedWidth(label_fix_w);
     total_gpu_panel->setAlignment(Qt::AlignmentFlag::AlignCenter);
@@ -151,11 +174,11 @@ void gui_farm_list_area::build_grand_info_panel()
         int_power /= 1000;
         power_value = " kW";
     }
-    else
+    else    //this->update();
     {
         power_value = " W";
     }
-    QLabel *total_power_usage_panel = new QLabel();
+    total_power_usage_panel = new QLabel();
     total_power_usage_panel->setFixedHeight(label_fix_h);
     total_power_usage_panel->setFixedWidth(label_fix_w);
     total_power_usage_panel->setAlignment(Qt::AlignmentFlag::AlignCenter);
@@ -164,6 +187,7 @@ void gui_farm_list_area::build_grand_info_panel()
     H_block->addWidget(total_rig_panel);
     H_block->addWidget(total_gpu_panel);
     H_block->addWidget(total_power_usage_panel);
+
     unsigned short int count_panel_obj = 3;
 
     for (auto algo : this->data.getSpeed_pair_list())
@@ -234,7 +258,7 @@ void gui_farm_list_area::build_grand_info_panel()
 
 void gui_farm_list_area::build_v_rig_panel()
 {
-    QVBoxLayout *v_rig_main_panel = new QVBoxLayout();
+    v_rig_main_panel = new QVBoxLayout();
     v_rig_main_panel->setAlignment(Qt::AlignmentFlag::AlignHCenter | Qt::AlignmentFlag::AlignTop);
     v_rig_main_panel->setContentsMargins(11,50,11,25);
     v_rig_main_panel->setSpacing(3);
@@ -244,12 +268,8 @@ void gui_farm_list_area::build_v_rig_panel()
       gui_farm_list_worker *WORKER = new gui_farm_list_worker(iter);
       WORKER->main_container->setAttribute(Qt::WA_Hover);
       WORKER->main_container->installEventFilter(this);
-      this->v_rig_main_panel_widget_container.push_back(WORKER);
-    }
-    // Накиидываем виджеты в панель
-    for (auto &iter : this->v_rig_main_panel_widget_container)
-    {
-        v_rig_main_panel->addWidget(iter->main_container);
+      v_rig_main_panel_widget_container.push_back(WORKER);
+      v_rig_main_panel->addWidget(WORKER->main_container);
     }
     this->v_rig_main_panel_widget->setLayout(v_rig_main_panel);
 }
@@ -307,8 +327,42 @@ void gui_farm_list_area::build_interface()
         this->main_area->addWidget(this->top_button_panel);
         this->main_area->addWidget(this->grand_info_panel);
         this->main_area->addWidget(this->v_rig_main_panel_widget);
+
         this->setLayout(this->main_area);
+
     //--------------------------------------------------------------------------------------------------------
+}
+
+void gui_farm_list_area::slot_accept_new_user_data(user_data new_data)
+{
+    v_rig_main_panel->deleteLater();
+    v_rig_main_panel_widget_container.clear();
+    delete H_block;
+    delete v_rig_main_panel_widget;
+    v_rig_main_panel_widget = new QScrollArea();
+    v_rig_main_panel_widget->setAlignment(Qt::AlignmentFlag::AlignTop);
+    //v_rig_main_panel_widget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    v_rig_main_panel_widget->setBackgroundRole(QPalette::Light);
+    v_rig_main_panel_widget->setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
+    v_rig_main_panel_widget->setStyleSheet("QScrollBar:vertical {background-color: transparent; width: 10px; border-radius: 0px; border: none; margin: 0px 0px 0px 0px;}");
+    v_rig_main_panel_widget->setStyleSheet("QScrollBar::handle:vertical {background-color: #1d2125; min-height: 30px; border-radius: 5px;}");
+
+    delete main_area;
+    main_area = new QVBoxLayout();
+    main_area->layout()->setContentsMargins(0,0,0,0);
+    main_area->layout()->setSpacing(0);
+    main_area->layout()->setMargin(0);
+    main_area->setAlignment(Qt::AlignmentFlag::AlignTop);
+
+    delete top_button_panel;
+    delete grand_info_panel;
+    top_button_panel = new QWidget();
+    grand_info_panel = new QWidget();
+
+    this->data = new_data;
+
+
+    this->build_interface();
 }
 
 void gui_farm_list_area::TopMenuEvent(QAction* act)

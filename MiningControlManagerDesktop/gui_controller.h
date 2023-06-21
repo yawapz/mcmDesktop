@@ -15,6 +15,7 @@ class gui_controller : public QWidget
     Q_OBJECT
 public:
     explicit gui_controller(QWidget *parent = nullptr);
+    ~gui_controller();
 
 private:
     QString login;
@@ -29,13 +30,14 @@ private:
 
 signals:
     void send_authorization_data(QString, QString, user_data);
+    void snd_new_data(QString, QString, user_data);
 public slots:
     void accept_authorization_data(QString log, QString pw, user_data new_data);
     void call_farm_list_form();
     void call_reg_form();
 
 private slots:
-
+    void slot_acceppt_data_and_start_new_widget(QString, QString, user_data);
 
 };
 

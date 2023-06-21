@@ -22,7 +22,8 @@ class gui_user_settings : public QWidget
 public:
     explicit gui_user_settings(QWidget *parent = nullptr);
     ~gui_user_settings();
-
+protected:
+        void closeEvent(QCloseEvent *);
 private:
     QTcpSocket *soc;
     QLineEdit *current_login;
@@ -34,7 +35,7 @@ private:
 
 
 signals:
-
+    void signal_exit_prog();
 private slots:
     void slot_accept_server_answer();
     void slot_update_request();

@@ -533,7 +533,7 @@ void gui_farm_info_worker::build_top_bottom_info_block(user_data::WORKER &WORKER
         QString D2 = QString::number(WORKER.uptime / 86400) + 'd';
         QString H2 = QString::number(WORKER.uptime / 3600 % 24) + 'h';
         QString M2 = QString::number(WORKER.uptime / 60 % 60) + 'm';
-        QString S2 = QString::number(WORKER.startup % 60) + 's';
+        QString S2 = QString::number(WORKER.uptime % 60) + 's';
 
         QLabel *boot_time_text = new QLabel("BOOTED");
         boot_time_text->setStyleSheet("background-color: transparent; color: white; font-size: 12px");

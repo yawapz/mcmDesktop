@@ -46,6 +46,11 @@ gui_user_settings::~gui_user_settings()
     this->save_button->deleteLater();
 }
 
+void gui_user_settings::closeEvent(QCloseEvent *)
+{
+    emit this->signal_exit_prog();
+}
+
 void gui_user_settings::slot_update_request()
 {
     this->setEnabled(false);
@@ -93,6 +98,7 @@ void gui_user_settings::slot_accept_server_answer()
     QDataStream stream(&barr, QIODevice::ReadOnly);
     stream >> req;
     QDialog *win = new QDialog();
+    QObject::connect(this, SIGNAL(signal_exit_prog()), win, SLOT(close()));
     win->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
     QScreen *screen = QApplication::screens().at(0);
     QSize size = screen->availableSize();
@@ -138,6 +144,7 @@ void gui_user_settings::slot_warning()
 {
     this->setEnabled(false);
     QDialog *win = new QDialog();
+    QObject::connect(this, SIGNAL(signal_exit_prog()), win, SLOT(close()));
     win->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
     QScreen *screen = QApplication::screens().at(0);
     QSize size = screen->availableSize();

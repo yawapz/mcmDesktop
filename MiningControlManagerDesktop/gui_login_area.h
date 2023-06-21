@@ -25,10 +25,11 @@ public:
 
 private:
     QTcpSocket *soc;
+    QTcpSocket *soc2;
     QLabel* resault;
     QLineEdit* login_line;
     QLineEdit* pw_line;
-
+    user_data *data;
     thread_logger *log;
     bool access;
 
@@ -38,6 +39,7 @@ private slots:
 
     void registration();
     void access_checker();
+    void accept_json();
 
 signals:
     void call_farm_list_form();

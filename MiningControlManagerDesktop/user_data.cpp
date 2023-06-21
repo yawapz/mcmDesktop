@@ -117,8 +117,8 @@ void user_data::JSON_server_to_desktop_parcer()
         worker.LA1 = rig_obj.take("LA1").toString();
         worker.LA5 = rig_obj.take("LA5").toString();
         worker.LA15 = rig_obj.take("LA15").toString();
-        worker.last_online = rig_obj.take("last_online").toString().toInt();
-        worker.startup = rig_obj.take("startup").toString().toInt();
+        worker.last_online = rig_obj.take("last_online").toInt();
+        worker.startup = rig_obj.take("startup").toInt();
         worker.electricity_cost = rig_obj.take("electricity_cost").toDouble();
         worker.algorithm = rig_obj.take("algorithm").toString();
         worker.algorithm2 = rig_obj.take("algorithm2").toString();
