@@ -76,7 +76,8 @@ void worker_data_builder::get_new_data()
 
 
     emit signal_send_worker_data(this->worker);
-    qDebug() << this->json;
+    //qDebug() << this->json;
+    //qDebug() << this->worker;
     arr->deleteLater();
 }
 
@@ -87,8 +88,10 @@ worker_data_builder::~worker_data_builder()
 
 void worker_data_builder::choice_parcer()
 {
-    if(this->json.take("miner").toString().toLower().contains("gminer"))
+    QString miner_name = this->json.take("miner").toString();
+    if(miner_name.toLower().contains("gminer"))
     {
+        this->worker.miner = miner_name;
         this->gminer_json_parcer();
     }
     else if (this->json.take("Software").toString().toLower().contains("lolminer"))
@@ -126,7 +129,7 @@ void worker_data_builder::gminer_json_parcer()
         this->worker.algorithm2 = "";
     }
 
-    this->worker.miner = this->json.take("miner").toString();
+    //this->worker.miner = this->json.take("miner").toString();
     this->worker.server = this->json.take("server").toString();
     this->worker.server2 = this->json.take("server2").toString();
     this->worker.user = this->json.take("user").toString();

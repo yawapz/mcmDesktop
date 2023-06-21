@@ -6,6 +6,40 @@
 
 struct GPU
 {
+    GPU()
+    {
+        this->name = "";
+        this->bus_id = "";
+        this->vendor = "";
+        this->total_memory = "";
+        this->VBIOS_version = "";
+        this->min_pl = "";
+        this->default_pl = "";
+        this->max_pl = "";
+        this->gpu_id = 0;
+        this->fan_speed = 0;
+        this->core_clock = 0;
+        this->memory_clock = 0;
+        this->power_usage = 0;
+        this->temperature = 0;
+        this->max_core_freq = 0;
+        this->max_mem_freq = 0;
+        this->speed = 0;
+        this->speed2 = 0;
+        this->accepted_shares = 0;
+        this->accepted_shares2 = 0;
+        this->rejected_shares = 0;
+        this->rejected_shares2 = 0;
+        this->stale_shares = 0;
+        this->stale_shares2 = 0;
+        this->invalid_shares = 0;
+        this->invalid_shares2 = 0;
+        this->memory_temperature = 0;
+        this->set_fan_speed = 0;
+        this->set_core = 0;
+        this->set_mem = 0;
+        this->set_pl = 0;
+    }
     // data from system
     QString name;
     QString bus_id;

@@ -23,8 +23,8 @@ void socket::slot_send_worker_data(WORKER inc_worker)
     stream << worker;
 
     this->connectToHost(conf.server_addr, conf.server_port);
-    //this->write(*worker.to_raw());
     this->write(*barr);
+    //this->flush();
     this->disconnectFromHost();
 
     delete barr;

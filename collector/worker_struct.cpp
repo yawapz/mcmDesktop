@@ -116,10 +116,6 @@ struct WORKER
         stream << this->version;
         stream << this->status;
         stream << this->last_online;
-
-
-
-        //qDebug() <<*array; // пустая
         return array;
     }
 
@@ -259,5 +255,86 @@ struct WORKER
         stream >> worker.status;
         stream >> worker.last_online;
         return stream;
+    }
+
+    friend QDebug operator<<(QDebug d, const WORKER &worker)
+    {
+        for (int i = 0; i < worker.devices.size(); ++i)
+        {
+            GPU gpu = worker.devices[i];
+            d << "GPU " << i << " name " << gpu.name << Qt::endl;
+            d << "GPU " << i << " bus_id " << gpu.bus_id << Qt::endl;
+            d << "GPU " << i << " vendor " << gpu.vendor << Qt::endl;
+            d << "GPU " << i << " total_memory " << gpu.total_memory << Qt::endl;
+            d << "GPU " << i << " VBIOS_version " << gpu.VBIOS_version << Qt::endl;
+            d << "GPU " << i << " min_pl " << gpu.min_pl << Qt::endl;
+            d << "GPU " << i << " default_pl " << gpu.default_pl << Qt::endl;
+            d << "GPU " << i << " max_pl " << gpu.max_pl << Qt::endl;
+            d << "GPU " << i << " gpu_id " << gpu.gpu_id << Qt::endl;
+            d << "GPU " << i << " fan_speed " << gpu.fan_speed << Qt::endl;
+            d << "GPU " << i << " core_clock " << gpu.core_clock << Qt::endl;
+            d << "GPU " << i << " memory_clock " << gpu.memory_clock << Qt::endl;
+            d << "GPU " << i << " power_usage " << gpu.power_usage;
+            d << "GPU " << i << " temperature " << gpu.temperature << Qt::endl;
+            d << "GPU " << i << " max_core_freq " << gpu.max_core_freq << Qt::endl;
+            d << "GPU " << i << " max_mem_freq " << gpu.max_mem_freq << Qt::endl;
+            d << "GPU " << i << " speed " << gpu.speed << Qt::endl;
+            d << "GPU " << i << " speed2 " << gpu.speed2 << Qt::endl;
+            d << "GPU " << i << " accepted_shares " << gpu.accepted_shares << Qt::endl;
+            d << "GPU " << i << " accepted_shares2 " << gpu.accepted_shares2 << Qt::endl;
+            d << "GPU " << i << " rejected_shares " << gpu.rejected_shares << Qt::endl;
+            d << "GPU " << i << " rejected_shares2 " << gpu.rejected_shares2 << Qt::endl;
+            d << "GPU " << i << " stale_shares " << gpu.stale_shares << Qt::endl;
+            d << "GPU " << i << " stale_shares2 " << gpu.stale_shares2 << Qt::endl;
+            d << "GPU " << i << " invalid_shares " << gpu.invalid_shares << Qt::endl;
+            d << "GPU " << i << " invalid_shares2 " << gpu.invalid_shares2 << Qt::endl;
+            d << "GPU " << i << " memory_temperature " << gpu.memory_temperature << Qt::endl;
+            d << "GPU " << i << " set_fan_speed " << gpu.set_fan_speed << Qt::endl;
+            d << "GPU " << i << " set_core " << gpu.set_core << Qt::endl;
+            d << "GPU " << i << " set_mem " << gpu.set_mem << Qt::endl;
+            d << "GPU " << i << " set_pl " << gpu.set_pl << Qt::endl;
+        }
+        d << "startup " << worker.startup << Qt::endl;
+        d << "LA1 " << worker.LA1 << Qt::endl;
+        d << "LA5 " << worker.LA5 << Qt::endl;
+        d << "LA15 " << worker.LA15 << Qt::endl;
+        d << "core_version " << worker.core_version << Qt::endl;
+        d << "nvidia_version " << worker.nvidia_version << Qt::endl;
+        d << "amd_version " << worker.amd_version << Qt::endl;
+        d << "motherboard_data " << worker.motherboard_data << Qt::endl;
+        d << "CPU_info " << worker.CPU_info << Qt::endl;
+        d << "CPU_temperature " << worker.CPU_temperature << Qt::endl;
+        d << "disk_model " << worker.disk_model << Qt::endl;
+        d << "disk_size " << worker.disk_size << Qt::endl;
+        d << "disk_free_space " << worker.disk_free_space << Qt::endl;
+        d << "RAM_total " << worker.RAM_total << Qt::endl;
+        d << "RAM_used " << worker.RAM_used << Qt::endl;
+        d << "RAM_free " << worker.RAM_free << Qt::endl;
+        d << "MAC " << worker.MAC << Qt::endl;
+        d << "local_ip " << worker.local_ip << Qt::endl;
+        d << "ext_ip " << worker.ext_ip << Qt::endl;
+        d << "miner " << worker.miner << Qt::endl;
+        d << "algorithm " << worker.algorithm << Qt::endl;
+        d << "algorithm2 " << worker.algorithm2 << Qt::endl;
+        d << "server " << worker.server << Qt::endl;
+        d << "server2 " << worker.server2 << Qt::endl;
+        d << "user " << worker.user << Qt::endl;
+        d << "user2 " << worker.user2 << Qt::endl;
+        d << "total_accepted_shares " << worker.total_accepted_shares << Qt::endl;
+        d << "total_accepted_shares2 " << worker.total_accepted_shares2 << Qt::endl;
+        d << "total_invalid_shares " << worker.total_invalid_shares << Qt::endl;
+        d << "total_invalid_shares2 " << worker.total_invalid_shares2 << Qt::endl;
+        d << "total_rejected_shares " << worker.total_rejected_shares << Qt::endl;
+        d << "total_rejected_shares2 " << worker.total_rejected_shares2 << Qt::endl;
+        d << "total_stale_shares " << worker.total_stale_shares << Qt::endl;
+        d << "total_stale_shares2 " << worker.total_stale_shares2 << Qt::endl;
+        d << "uptime " << worker.uptime << Qt::endl;
+        d << "name " << worker.name << Qt::endl;
+        d << "ID " << worker.ID << Qt::endl;
+        d << "electricity_cost " << worker.electricity_cost << Qt::endl;
+        d << "version " << worker.version << Qt::endl;
+        d << "status " << worker.status << Qt::endl;
+        d << "last_online " << worker.last_online << Qt::endl;
+        return d;
     }
 };
