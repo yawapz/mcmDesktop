@@ -102,7 +102,7 @@ void gui_farm_info_worker::build_top_small_block(user_data::WORKER &WORKER)
 
         QLabel *LA5 = new QLabel(WORKER.LA5);
         if(WORKER.LA5.toDouble() >= 0.8)
-            LA5->setStyleSheet("background-color: transparent; color: red; font-size: 16px");
+            LA5->setStyleSheet("background-color: transparent; color: #FF3733; font-size: 16px");
         else
             LA5->setStyleSheet("background-color: transparent; color: #818E9C; font-size: 16px");
         LA5->setAlignment( Qt::AlignmentFlag::AlignLeft | Qt::AlignmentFlag::AlignVCenter);
@@ -111,7 +111,7 @@ void gui_farm_info_worker::build_top_small_block(user_data::WORKER &WORKER)
 
         QLabel *LA15 = new QLabel(WORKER.LA15);
         if(WORKER.LA15.toDouble() >= 0.8)
-            LA15->setStyleSheet("background-color: transparent; color: red; font-size: 16px");
+            LA15->setStyleSheet("background-color: transparent; color: #FF3733; font-size: 16px");
         else
             LA15->setStyleSheet("background-color: transparent; color: #818E9C; font-size: 16px");
         LA15->setAlignment(Qt::AlignmentFlag::AlignLeft | Qt::AlignmentFlag::AlignVCenter);
@@ -704,28 +704,31 @@ void gui_farm_info_worker::build_mid_block(user_data::WORKER &WORKER)
     mid_lay->setContentsMargins(0,50,0,0);
     mid_lay->setSpacing(2);
     //-----------------------------------------------------------
-    QHBoxLayout *sign_lay = new QHBoxLayout();
-    sign_lay->setAlignment(Qt::AlignmentFlag::AlignBottom | Qt::AlignmentFlag::AlignRight);
-    sign_lay->setContentsMargins(0,0,0,0);
-    sign_lay->setSpacing(0);
-    QLabel *fan_lbl = new QLabel("FAN");
-    fan_lbl->setContentsMargins(0,0,27,0);
-    fan_lbl->setStyleSheet("background-color: transparent; color: #818E9C; font-size: 12px");
-    QLabel *core_lbl = new QLabel("CORE");
-    core_lbl->setContentsMargins(0,0,32,0);
-    core_lbl->setStyleSheet("background-color: transparent; color: #818E9C; font-size: 12px");
-    QLabel *mem_lbl = new QLabel("MEM");
-    mem_lbl->setContentsMargins(0,0,35,0);
-    mem_lbl->setStyleSheet("background-color: transparent; color: #818E9C; font-size: 12px");
-    QLabel *pl_lbl = new QLabel("PL");
-    pl_lbl->setContentsMargins(0,0,60,0);
-    pl_lbl->setStyleSheet("background-color: transparent; color: #818E9C; font-size: 12px");
+    if(WORKER.devices.size() > 0)
+    {
+        QHBoxLayout *sign_lay = new QHBoxLayout();
+        sign_lay->setAlignment(Qt::AlignmentFlag::AlignBottom | Qt::AlignmentFlag::AlignRight);
+        sign_lay->setContentsMargins(0,0,0,0);
+        sign_lay->setSpacing(0);
+        QLabel *fan_lbl = new QLabel("FAN");
+        fan_lbl->setContentsMargins(0,0,27,0);
+        fan_lbl->setStyleSheet("background-color: transparent; color: #818E9C; font-size: 12px");
+        QLabel *core_lbl = new QLabel("CORE");
+        core_lbl->setContentsMargins(0,0,32,0);
+        core_lbl->setStyleSheet("background-color: transparent; color: #818E9C; font-size: 12px");
+        QLabel *mem_lbl = new QLabel("MEM");
+        mem_lbl->setContentsMargins(0,0,35,0);
+        mem_lbl->setStyleSheet("background-color: transparent; color: #818E9C; font-size: 12px");
+        QLabel *pl_lbl = new QLabel("PL");
+        pl_lbl->setContentsMargins(0,0,60,0);
+        pl_lbl->setStyleSheet("background-color: transparent; color: #818E9C; font-size: 12px");
 
-    sign_lay->addWidget(fan_lbl);
-    sign_lay->addWidget(core_lbl);
-    sign_lay->addWidget(mem_lbl);
-    sign_lay->addWidget(pl_lbl);
-    mid_lay->addLayout(sign_lay);
+        sign_lay->addWidget(fan_lbl);
+        sign_lay->addWidget(core_lbl);
+        sign_lay->addWidget(mem_lbl);
+        sign_lay->addWidget(pl_lbl);
+        mid_lay->addLayout(sign_lay);
+    }
     //-----------------------------------------------------------
     for (auto& GPU : WORKER.devices)
     {

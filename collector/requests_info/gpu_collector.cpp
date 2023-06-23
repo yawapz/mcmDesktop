@@ -378,15 +378,15 @@ void gpu_collector::gminer_json_parcer()
         QJsonObject iter_obj = iter.toObject();
         gpu_list[index].speed = iter_obj.take("speed").toInt();
         gpu_list[index].speed2 = iter_obj.take("speed2").toInt();
-        gpu_list[index].memory_temperature = this->main_json_file.take("memory_temperature").toInt();
-        gpu_list[index].accepted_shares = this->main_json_file.take("accepted_shares").toInt();
-        gpu_list[index].accepted_shares2 = this->main_json_file.take("accepted_shares2").toInt();
-        gpu_list[index].invalid_shares = this->main_json_file.take("invalid_shares").toInt();
-        gpu_list[index].invalid_shares2 = this->main_json_file.take("invalid_shares2").toInt();
-        gpu_list[index].rejected_shares = this->main_json_file.take("rejected_shares").toInt();
-        gpu_list[index].rejected_shares2 = this->main_json_file.take("rejected_shares").toInt();
-        gpu_list[index].stale_shares = this->main_json_file.take("stale_shares").toInt();
-        gpu_list[index].stale_shares2 = this->main_json_file.take("stale_shares2").toInt();
+        gpu_list[index].memory_temperature = iter_obj.take("memory_temperature").toInt();
+        gpu_list[index].accepted_shares = iter_obj.take("accepted_shares").toInt();
+        gpu_list[index].accepted_shares2 = iter_obj.take("accepted_shares2").toInt();
+        gpu_list[index].invalid_shares = iter_obj.take("invalid_shares").toInt();
+        gpu_list[index].invalid_shares2 = iter_obj.take("invalid_shares2").toInt();
+        gpu_list[index].rejected_shares = iter_obj.take("rejected_shares").toInt();
+        gpu_list[index].rejected_shares2 = iter_obj.take("rejected_shares").toInt();
+        gpu_list[index].stale_shares = iter_obj.take("stale_shares").toInt();
+        gpu_list[index].stale_shares2 = iter_obj.take("stale_shares2").toInt();
         ++index;
     }
 }

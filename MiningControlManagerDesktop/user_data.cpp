@@ -45,7 +45,7 @@ void user_data::counting_rigs()
     this->total_count_WORKERs = 0;
     for (auto& iter : RIGS)
     {
-        if(iter.status)
+        if(!iter.ID.isEmpty())
             ++this->total_count_WORKERs;
     }
 }
@@ -55,7 +55,7 @@ void user_data::counting_GPUs()
     this->total_count_GPU = 0;
     for (auto RIG : this->RIGS)
     {
-        if(RIG.status)
+        if(RIG.devices.size() > 0)
             this->total_count_GPU += RIG.devices.size();
     }
 }
@@ -107,6 +107,11 @@ void user_data::counting_speed()
 
 void user_data::JSON_server_to_desktop_parcer()
 {
+    this->RIGS.clear();
+    this->speed_pair_list.clear();
+    this->total_count_GPU = 0;
+    this->total_power_usage = 0;
+    this->total_count_WORKERs = 0;
     QJsonArray rigs = this->main_json_file.value("rigs").toArray();
     for (auto rig : rigs)
     {

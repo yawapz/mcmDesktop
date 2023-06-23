@@ -5,8 +5,9 @@
 //#include "thread_farm_info.h"
 #include "gui_farm_list_worker.h"
 #include "gui_farm_info_area.h"
+#include "gui_worker_settings.h"
 
-
+#include <QMouseEvent>
 #include <QWidget>
 #include <QString>
 #include <QHBoxLayout>
@@ -38,6 +39,7 @@ private:
     thread_refresh_data *refresher;
     gui_farm_info_area *farm_info_arr;
     gui_user_settings *user_settings;
+    gui_worker_settings *worker_settings;
 
     QString login;
     QString password;
@@ -61,6 +63,10 @@ private:
     void build_v_rig_panel();
 
 protected:
+    void mouseMoveEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent* event);
+    void mouseReleaseEvent(QMouseEvent* event);
+
     bool eventFilter(QObject *, QEvent *);
     void closeEvent(QCloseEvent *);
 public slots:
@@ -71,13 +77,19 @@ private slots:
     //void clicked_on_refresh_button();
     void slot_accept_new_user_data(user_data);
     void TopMenuEvent(QAction*);
+    void slot_disable_interface();
+    void slot_active_interface();
 
 signals:
     void send_authorization_data(QString, QString, user_data);
     void signal_workerinfo_sender(QString);
     void signal_exit_prog();
     void signal_show_user_settings();
+    void signal_show_worker_settings();
     void signal_ready_update(QString, QString, user_data);
+    void signal_send_data_for_workers_settings(QString, QString, user_data);
+    void signal_accept_new_user_data(user_data);
+    void signal_new_pos(QPoint, QSize);
 
 private:
     unsigned short int grand_panel_base_height;
@@ -92,6 +104,12 @@ private:
     QString block_style;
     int label_fix_h;
     int label_fix_w;
+
+    bool eventFilterblock;
+
+
+    bool moving;
+    QPoint last_mouse_pos;
 
 };
 

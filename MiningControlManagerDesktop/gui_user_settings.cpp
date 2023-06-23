@@ -99,7 +99,7 @@ void gui_user_settings::slot_accept_server_answer()
     stream >> req;
     QDialog *win = new QDialog();
     QObject::connect(this, SIGNAL(signal_exit_prog()), win, SLOT(close()));
-    win->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+    win->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     QScreen *screen = QApplication::screens().at(0);
     QSize size = screen->availableSize();
     win->move(size.width()/2 - 125 + 50, size.height()/2 - 110 + 80);
@@ -145,7 +145,7 @@ void gui_user_settings::slot_warning()
     this->setEnabled(false);
     QDialog *win = new QDialog();
     QObject::connect(this, SIGNAL(signal_exit_prog()), win, SLOT(close()));
-    win->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+    win->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     QScreen *screen = QApplication::screens().at(0);
     QSize size = screen->availableSize();
 

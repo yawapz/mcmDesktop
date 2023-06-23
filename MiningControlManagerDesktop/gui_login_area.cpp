@@ -70,6 +70,14 @@ gui_login_area::~gui_login_area()
     data->deleteLater();
 }
 
+void gui_login_area::keyReleaseEvent(QKeyEvent *event)
+{
+    if(QString::number(event->key()) == "16777220")
+    {
+        authorization();
+    }
+}
+
 void gui_login_area::authorization()
 {
     QByteArray *barr = new QByteArray();

@@ -9,5 +9,6 @@
         <file>res/refresh.svg</file>
         <file>res/speed.svg</file>
         <file>res/temperature.svg</file>
+        <file>res/del_btn.svg</file>
     </qresource>
 </RCC>

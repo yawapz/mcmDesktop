@@ -28,6 +28,7 @@ private slots:
 signals:
     void signal_send_new_data(user_data);
     void signal_accept_data(QString, QString, user_data);
+    void signal_start();
 };
 
 #endif // THREAD_REFRESH_DATA_H

@@ -15,6 +15,7 @@
 #include <QTcpSocket>
 #include <QEventLoop>
 #include <QTimer>
+#include <QKeyEvent>
 
 class gui_login_area : public QWidget
 {
@@ -22,6 +23,9 @@ class gui_login_area : public QWidget
 public:
     explicit gui_login_area(QWidget *parent = nullptr);
     ~gui_login_area();
+
+protected:
+    void keyReleaseEvent(QKeyEvent* event) override;
 
 private:
     QTcpSocket *soc;

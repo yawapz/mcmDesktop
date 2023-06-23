@@ -63,6 +63,51 @@ struct WORKER
     long long int last_online;
 
     //-----------------------------------------------
+    WORKER()
+    {
+        //this->devices;
+        this->startup = 0;
+        this->LA1 = "";
+        this->LA5 = "";
+        this->LA15 = "";
+        this->core_version = "";
+        this->nvidia_version = "";
+        this->amd_version = "";
+        this->motherboard_data = "";
+        this->CPU_info = "";
+        this->CPU_temperature = "";
+        this->disk_model = "";
+        this->disk_size = "";
+        this->disk_free_space = "";
+        this->RAM_total = "";
+        this->RAM_used = "";
+        this->RAM_free = "";
+        this->MAC ="";
+        this->local_ip = "";
+        this->ext_ip = "";
+        this->miner = "";
+        this->algorithm = "";
+        this->algorithm2 = "";
+        this->server = "";
+        this->server2 = "";
+        this->user = "";
+        this->user2 = "";
+        this->total_accepted_shares = 0;
+        this->total_accepted_shares = 0;
+        this->total_invalid_shares = 0;
+        this->total_invalid_shares2 = 0;
+        this->total_rejected_shares = 0;
+        this->total_rejected_shares2 = 0;
+        this->total_stale_shares = 0;
+        this->total_stale_shares2 = 0;
+        this->uptime = 0;
+        this->name = "";
+        this->ID = "";
+        this->electricity_cost = 0;
+        this->version = "";
+        this->status = false;
+        this->last_online = 0;
+    }
 
     QByteArray* to_raw()
     {

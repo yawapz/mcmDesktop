@@ -3,6 +3,11 @@
 gui_farm_list_area::gui_farm_list_area(QWidget *parent)
     : QWidget{parent}
 {
+    this->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint);
+    this->eventFilterblock = false;
+    this->moving = false;
+    qDebug() << "Основной поток " << QThread::currentThreadId();
+    QObject::connect(this, SIGNAL(signal_accept_new_user_data(user_data)), this, SLOT(slot_accept_new_user_data(user_data)));
     this->refresher = new thread_refresh_data();
     QObject::connect(this, &gui_farm_list_area::send_authorization_data, refresher,  &thread_refresh_data::signal_accept_data);
     QObject::connect(refresher, SIGNAL(signal_send_new_data(user_data)), this, SLOT(slot_accept_new_user_data(user_data)));
@@ -16,8 +21,16 @@ gui_farm_list_area::gui_farm_list_area(QWidget *parent)
 
     this->farm_info_arr  = new gui_farm_info_area();
     this->user_settings = new gui_user_settings();
+    this->worker_settings = new gui_worker_settings();
     QObject::connect(this, SIGNAL(signal_exit_prog()), user_settings, SIGNAL(signal_exit_prog()));
     QObject::connect(this, SIGNAL(signal_show_user_settings()), user_settings, SLOT(show()));
+    QObject::connect(this, SIGNAL(signal_show_worker_settings()), worker_settings, SLOT(show()));
+    QObject::connect(this, SIGNAL(signal_exit_prog()), worker_settings, SLOT(close()));
+    QObject::connect(this, SIGNAL(signal_new_pos(QPoint, QSize)), worker_settings, SIGNAL(signal_new_pos(QPoint, QSize)));
+    QObject::connect(worker_settings, SIGNAL(signal_send_data(user_data)), this, SIGNAL(signal_accept_new_user_data(user_data)));
+    QObject::connect(this, SIGNAL(signal_show_worker_settings()), this, SLOT(slot_disable_interface()));
+    QObject::connect(worker_settings, SIGNAL(signal_unlock()), this, SLOT(slot_active_interface()));
+    QObject::connect(this, SIGNAL(signal_send_data_for_workers_settings(QString, QString, user_data)), worker_settings, SIGNAL(signal_inc_data(QString,QString,user_data)));
     QObject::connect(this, SIGNAL(signal_exit_prog()), user_settings, SLOT(close()));
     QObject::connect(this, &gui_farm_list_area::send_authorization_data, this->farm_info_arr,  &gui_farm_info_area::signal_accept_data);
 
@@ -60,6 +73,7 @@ gui_farm_list_area::~gui_farm_list_area()
     this->total_gpu_panel->deleteLater();
     this->total_power_usage_panel->deleteLater();
     this->v_rig_main_panel->deleteLater();
+    this->worker_settings->deleteLater();
 }
 
 void gui_farm_list_area::build_top_button_panel()
@@ -106,9 +120,7 @@ void gui_farm_list_area::build_top_button_panel()
 //--------------------------------------------------------------------------------------------------------
         // кнопка refresh
     QPushButton *refresh_button = new QPushButton();
-    QObject::connect(refresh_button, SIGNAL(clicked(bool)), refresher, SLOT(run()));
-    //refresh_button->setAutoDefault(false);
-
+    QObject::connect(refresh_button, SIGNAL(clicked(bool)), refresher, SIGNAL(signal_start()));
     refresh_button->setCursor(Qt::PointingHandCursor);
     QPixmap *icon = new QPixmap("res/refresh.svg");
     QPainter qp = QPainter(icon);
@@ -131,7 +143,6 @@ void gui_farm_list_area::build_top_button_panel()
 //--------------------------------------------------------------------------------------------------------
     // Настройки блока
     left->addWidget(logo);
-
     right->addWidget(refresh_button);
     right->addWidget(user_button);
     top_block->addLayout(left, 0);
@@ -174,7 +185,7 @@ void gui_farm_list_area::build_grand_info_panel()
         int_power /= 1000;
         power_value = " kW";
     }
-    else    //this->update();
+    else
     {
         power_value = " W";
     }
@@ -274,6 +285,31 @@ void gui_farm_list_area::build_v_rig_panel()
     this->v_rig_main_panel_widget->setLayout(v_rig_main_panel);
 }
 
+void gui_farm_list_area::mouseMoveEvent(QMouseEvent *event)
+{
+    if( event->buttons().testFlag(Qt::LeftButton) && moving)
+    {
+        this->move(this->pos() + (event->pos() - last_mouse_pos));
+    }
+}
+
+void gui_farm_list_area::mousePressEvent(QMouseEvent *event)
+{
+    if(event->button() == Qt::LeftButton)
+    {
+        moving = true;
+        last_mouse_pos = event->pos();
+    }
+}
+
+void gui_farm_list_area::mouseReleaseEvent(QMouseEvent *event)
+{
+    if(event->button() == Qt::LeftButton)
+    {
+        moving = false;
+    }
+}
+
 bool gui_farm_list_area::eventFilter(QObject *obj, QEvent *event)
 {
     for (int i = 0; i < this->v_rig_main_panel_widget_container.size(); ++i)
@@ -283,21 +319,28 @@ bool gui_farm_list_area::eventFilter(QObject *obj, QEvent *event)
             QEvent::Type type = event->type();
             if  (type == QEvent::HoverLeave)
             {
-                if(!this->v_rig_main_panel_widget_container[i]->status)
-                    this->v_rig_main_panel_widget_container[i]->main_container->setStyleSheet("QWidget {background-color: #262b31; border: none; border-radius: 0px};");
-                else
-                    this->v_rig_main_panel_widget_container[i]->main_container->setStyleSheet("QWidget {background-color: #363d45; border: none; border-radius: 0px};");
+                if(!eventFilterblock)
+                {
+                    if(!this->v_rig_main_panel_widget_container[i]->status)
+                        this->v_rig_main_panel_widget_container[i]->main_container->setStyleSheet("QWidget {background-color: #262b31; border: none; border-radius: 0px};");
+                    else
+                        this->v_rig_main_panel_widget_container[i]->main_container->setStyleSheet("QWidget {background-color: #363d45; border: none; border-radius: 0px};");
+                }
             }
             else if (type == QEvent::HoverEnter)
             {
-                this->v_rig_main_panel_widget_container[i]->main_container->setStyleSheet("QWidget {background-color: rgba(35, 146, 220, 0.5); border: none; border-radius: 0px;};");
+                if(!eventFilterblock)
+                    this->v_rig_main_panel_widget_container[i]->main_container->setStyleSheet("QWidget {background-color: rgba(35, 146, 220, 0.5); border: none; border-radius: 0px;};");
 
             } else if (type == QEvent::MouseButtonPress)
             {
                 connect(this, SIGNAL(signal_workerinfo_sender(QString)), this->farm_info_arr, SIGNAL(signal_find_widget(QString)));
                 connect(this, SIGNAL(signal_exit_prog()), this->farm_info_arr, SIGNAL(signal_exit_prog()));
-                emit signal_workerinfo_sender(v_rig_main_panel_widget_container[i]->ID);
-                disconnect(this, SIGNAL(signal_workerinfo_sender(QString)), this->farm_info_arr, SIGNAL(signal_find_widget(QString)));
+                if(!eventFilterblock)
+                {
+                    emit signal_workerinfo_sender(v_rig_main_panel_widget_container[i]->ID);
+                    disconnect(this, SIGNAL(signal_workerinfo_sender(QString)), this->farm_info_arr, SIGNAL(signal_find_widget(QString)));
+                }
             }
         }
     }
@@ -314,6 +357,7 @@ void gui_farm_list_area::accept_authorization_data(QString log, QString pw, user
     this->login = log;
     this->password = pw;
     this->data = new_data;
+    emit signal_send_data_for_workers_settings(this->login, this->password, this->data);
 }
 
 void gui_farm_list_area::build_interface()
@@ -336,6 +380,10 @@ void gui_farm_list_area::build_interface()
 void gui_farm_list_area::slot_accept_new_user_data(user_data new_data)
 {
     v_rig_main_panel->deleteLater();
+    for (auto& iter : v_rig_main_panel_widget_container)
+    {
+        iter->deleteLater();
+    }
     v_rig_main_panel_widget_container.clear();
     delete H_block;
     delete v_rig_main_panel_widget;
@@ -360,7 +408,8 @@ void gui_farm_list_area::slot_accept_new_user_data(user_data new_data)
     grand_info_panel = new QWidget();
 
     this->data = new_data;
-
+    this->data.JSON_server_to_desktop_parcer();
+    emit signal_send_data_for_workers_settings(this->login, this->password, this->data);
 
     this->build_interface();
 }
@@ -383,7 +432,20 @@ void gui_farm_list_area::TopMenuEvent(QAction* act)
     }
     else if(act->text() == "Worker settings")
     {
-
+        emit signal_new_pos(this->pos(), this->size());
+        emit signal_show_worker_settings();
     }
+}
+
+void gui_farm_list_area::slot_disable_interface()
+{
+    eventFilterblock = true;
+    this->setEnabled(false);
+}
+
+void gui_farm_list_area::slot_active_interface()
+{
+    eventFilterblock = false;
+    this->setEnabled(true);
 }
 
