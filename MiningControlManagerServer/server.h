@@ -29,6 +29,7 @@ private:
     int port;
     QList<QTcpSocket*> connections;
     QSqlDatabase DB;
+    QElapsedTimer t;
 
 signals:
     //void incoming_new_worker_data(QDataStream&);

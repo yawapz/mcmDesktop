@@ -15,6 +15,8 @@ void socket::slot_send_worker_data(WORKER inc_worker)
     worker.name = conf.name;
     worker.ID = conf.ID;
     worker.electricity_cost = conf.electricity_cost;
+    worker.fill_JSON_object();
+    //qDebug() << QJsonDocument::fromJson(worker.str_json.toUtf8());
 
     QByteArray *barr = new QByteArray();
     QDataStream stream(barr, QIODevice::Append);

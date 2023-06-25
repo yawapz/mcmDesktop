@@ -1,5 +1,9 @@
 #pragma once
 
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+
 #include <QString>
 #include <QIODevice>
 #include <QDataStream>
@@ -9,6 +13,8 @@
 
 struct WORKER
 {
+    QJsonObject worker_json;
+    QString str_json;
     // data from system
     QList<GPU> devices;
     long long int startup;
@@ -109,6 +115,92 @@ struct WORKER
         this->last_online = 0;
     }
 
+    void fill_JSON_object()
+    {
+        QJsonArray gpu_arr;
+        for (auto gpu : this->devices)
+        {
+            QJsonObject obj;
+            obj.insert("name", gpu.name);
+            obj.insert("bus_id", gpu.bus_id);
+            obj.insert("gpu_id", gpu.gpu_id);
+            obj.insert("fan_speed", gpu.fan_speed);
+            obj.insert("core_clock", gpu.core_clock);
+            obj.insert("memory_clock", gpu.memory_clock);
+            obj.insert("power_usage", gpu.power_usage);
+            obj.insert("speed", gpu.speed);
+            obj.insert("speed2", gpu.speed2);
+            obj.insert("accepted_shares", gpu.accepted_shares);
+            obj.insert("accepted_shares2", gpu.accepted_shares2);
+            obj.insert("rejected_shares", gpu.rejected_shares);
+            obj.insert("rejected_shares2", gpu.rejected_shares2);
+            obj.insert("stale_shares", gpu.stale_shares);
+            obj.insert("stale_shares2", gpu.stale_shares2);
+            obj.insert("invalid_shares", gpu.invalid_shares);
+            obj.insert("invalid_shares2", gpu.invalid_shares2);
+            obj.insert("temperature", gpu.temperature);
+            obj.insert("memory_temperature", gpu.memory_temperature);
+            obj.insert("set_fan_speed", gpu.set_fan_speed);
+            obj.insert("set_core", gpu.set_core);
+            obj.insert("set_mem", gpu.set_mem);
+            obj.insert("set_pl", gpu.set_pl);
+            obj.insert("vendor", gpu.vendor);
+            obj.insert("VBIOS_version", gpu.VBIOS_version);
+            obj.insert("total_memory", gpu.total_memory);
+            obj.insert("min_pl", gpu.min_pl);
+            obj.insert("default_pl", gpu.default_pl);
+            obj.insert("max_pl", gpu.max_pl);
+            obj.insert("max_core_freq", gpu.max_core_freq);
+            obj.insert("max_mem_freq", gpu.max_mem_freq);
+            gpu_arr.push_back(obj);
+        }
+        QJsonObject doc;
+        doc.insert("status", this->status);
+        doc.insert("startup", this->startup);
+        doc.insert("last_online", this->last_online);
+        doc.insert("worker_name", this->name);
+        doc.insert("ID", this->ID);
+        doc.insert("devices",gpu_arr);
+        doc.insert("miner", this->miner);
+        doc.insert("algorithm", this->algorithm);
+        doc.insert("algorithm2", this->algorithm2);
+        doc.insert("server", this->server);
+        doc.insert("server2", this->server2);
+        doc.insert("user", this->user);
+        doc.insert("user2", this->user2);
+        doc.insert("total_accepted_shares", this->total_accepted_shares);
+        doc.insert("total_accepted_shares2", this->total_accepted_shares2);
+        doc.insert("total_rejected_shares", this->total_rejected_shares);
+        doc.insert("total_rejected_shares2", this->total_rejected_shares);
+        doc.insert("total_invalid_shares", this->total_invalid_shares);
+        doc.insert("total_invalid_shares2", this->total_invalid_shares2);
+        doc.insert("total_stale_shares", this->total_stale_shares);
+        doc.insert("total_stale_shares2", this->total_stale_shares2);
+        doc.insert("uptime", this->uptime);
+        doc.insert("local_ip", this->local_ip);
+        doc.insert("ext_ip", this->ext_ip);
+        doc.insert("LA1", this->LA1);
+        doc.insert("LA5", this->LA5);
+        doc.insert("LA15", this->LA15);
+        doc.insert("electricity_cost", this->electricity_cost);
+        doc.insert("core_version", this->core_version);
+        doc.insert("nvidia_version", this->nvidia_version);
+        doc.insert("amd_version", this->amd_version);
+        doc.insert("motherboard_data", this->motherboard_data);
+        doc.insert("CPU_info", this->CPU_info);
+        doc.insert("CPU_temperature", this->CPU_temperature);
+        doc.insert("disk_model", this->disk_model);
+        doc.insert("disk_size", this->disk_size);
+        doc.insert("disk_free_space", this->disk_free_space);
+        doc.insert("RAM_total", this->RAM_total);
+        doc.insert("RAM_used", this->RAM_used);
+        doc.insert("RAM_free", this->RAM_free);
+        doc.insert("MAC", this->MAC);
+        doc.insert("version", this->version);
+        this->worker_json = doc;
+        QJsonDocument json_doc(this->worker_json);
+        this->str_json = (json_doc.toJson(QJsonDocument::Compact));
+    }
     QByteArray* to_raw()
     {
         QByteArray* array = new QByteArray();
@@ -214,6 +306,8 @@ struct WORKER
         stream << worker.version;
         stream << worker.status;
         stream << worker.last_online;
+        stream << worker.worker_json;
+        stream << worker.str_json;
 
         return stream;
     }
@@ -299,6 +393,8 @@ struct WORKER
         stream >> worker.version;
         stream >> worker.status;
         stream >> worker.last_online;
+        stream >> worker.worker_json;
+        stream >> worker.str_json;
         return stream;
     }
 
