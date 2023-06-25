@@ -62,6 +62,7 @@ void user_data::counting_GPUs()
 
 void user_data::counting_speed()
 {
+    this->speed_pair_list.clear();
     for (auto rig : this->RIGS)
     {
         if(rig.status)
@@ -206,6 +207,29 @@ void user_data::JSON_server_to_desktop_parcer()
     this->counting_rigs();
     this->counting_GPUs();
     this->counting_speed();
+    // Сортировка
+    std::sort(this->RIGS.begin(), this->RIGS.end(), [](WORKER &left, WORKER &right) -> bool
+    {
+        if(left.status && !right.status)
+            return true;
+        else if(!left.status && right.status)
+            return false;
+        else if(left.status && right.status)
+        {
+            if(left.name >= right.name)
+                return true;
+            else
+                return false;
+        }
+        else if(!left.status && !right.status)
+        {
+            if(left.name >= right.name)
+                return true;
+            else
+                return false;
+        }
+        else return true;
+    });
 }
 
 void user_data::JSON_from_local_directory_file()

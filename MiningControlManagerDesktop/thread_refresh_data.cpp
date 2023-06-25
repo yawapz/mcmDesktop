@@ -19,8 +19,7 @@ thread_refresh_data::~thread_refresh_data()
 void thread_refresh_data::run()
 {
     this->soc = new QTcpSocket();
-    QObject::connect(soc, SIGNAL(readyRead()), this, SLOT(slot_accept_json()/*, Qt::QueuedConnection*/));
-    //QMetaObject::Connection connect(soc, SIGNAL(readyRead()), this, SLOT(slot_accept_json(), Qt::QueuedConnection));
+    QObject::connect(soc, SIGNAL(readyRead()), this, SLOT(slot_accept_json()));
 
     qDebug() << "Второй поток = " << QThread::currentThreadId();
     QByteArray *barr = new QByteArray();
@@ -40,6 +39,7 @@ void thread_refresh_data::run()
     QTimer t;
     t.connect(&t, &QTimer::timeout, loop, &QEventLoop::quit);
     t.connect(soc, SIGNAL(readyRead()), loop, SLOT(quit()));
+    t.setSingleShot(true);
     t.start(5*1000); // 5 sec
     loop->exec();
     loop->deleteLater();
@@ -64,6 +64,5 @@ void thread_refresh_data::slot_accept_json()
     inc_data.main_json_file = jsonObject;
     inc_data.JSON_server_to_desktop_parcer();
     emit signal_send_new_data(inc_data);
-    //this->terminate();
     this->soc->deleteLater();
 }

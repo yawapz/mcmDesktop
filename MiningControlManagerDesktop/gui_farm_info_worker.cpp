@@ -48,6 +48,22 @@ gui_farm_info_worker::gui_farm_info_worker(user_data::WORKER WORKER)
     QObject::connect(this, SIGNAL(signal_exit_prog()), this, SLOT(slot_exit_prog()));
 }
 
+gui_farm_info_worker::~gui_farm_info_worker()
+{
+    main_lay->deleteLater();
+    top_small_block->deleteLater();
+    top_status_block->deleteLater();
+    top_bottom_info_block->deleteLater();
+    card_counting_small_block->deleteLater();
+    mid_block->deleteLater();
+    bottom_block->deleteLater();
+    for (auto& iter : gpu_widget_container)
+    {
+        iter->deleteLater();
+    }
+    gpu_widget_container.clear();
+}
+
 void gui_farm_info_worker::build_top_small_block(user_data::WORKER &WORKER)
 {
     top_small_block = new QWidget();

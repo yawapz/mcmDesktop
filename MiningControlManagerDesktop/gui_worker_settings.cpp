@@ -176,7 +176,7 @@ void gui_worker_settings::slot_add_worker()
     stream << login;
 
     if(!soc->isOpen())
-        soc->connectToHost("127.0.0.1", 48048);
+        soc->connectToHost(host, port);
     soc->waitForConnected(1000);
     soc->write(*barr);
     soc->flush();
@@ -211,7 +211,7 @@ void gui_worker_settings::slot_check_result_operation()
         stream << command;
         stream << login;
         if(!soc->isOpen())
-            soc->connectToHost("127.0.0.1", 48048);
+            soc->connectToHost(host, port);
         soc->waitForConnected(1000);
         soc->write(*barr2);
         soc->flush();
@@ -236,6 +236,7 @@ void gui_worker_settings::slot_accept_json()
     QJsonObject jsonObject;
     stream >> jsonObject;
     data.main_json_file = jsonObject;
+    data.JSON_server_to_desktop_parcer();
     soc->waitForDisconnected(1000);
     slot_build_interface();
     emit signal_send_data(data);

@@ -16,9 +16,9 @@ class gui_farm_list_worker : public QWidget
     Q_OBJECT
 public:
     explicit gui_farm_list_worker(user_data::WORKER WORKER);
+    ~gui_farm_list_worker();
 
     QString ID;
-
 //private:
     QWidget *main_container;
     QHBoxLayout *lay;
@@ -32,8 +32,22 @@ public:
 
     bool status;
 
-signals:
+    QLabel *name;
+    QLabel *time;
+    QLabel *miner;
+    QLabel *S;
+    QLabel *R;
+    QLabel *ALG;
+    QLabel *power;
+    QLabel *fan_speed;
+private:
+    unsigned short int count_gpu;
 
+signals:
+    void signal_inc_data(user_data::WORKER);
+
+private slots:
+    void slot_update_worker(user_data::WORKER);
 };
 
 #endif // GUI_FARM_LIST_WORKER_H

@@ -104,6 +104,7 @@ void gui_login_area::authorization()
     t.connect(&t, &QTimer::timeout, loop, &QEventLoop::quit);
     t.connect(soc, SIGNAL(readyRead()), loop, SLOT(quit()));
     t.start(5*1000); // 5 sec
+    t.setSingleShot(true);
     loop->exec();
     loop->deleteLater();
 

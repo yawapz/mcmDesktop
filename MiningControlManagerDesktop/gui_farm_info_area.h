@@ -11,8 +11,6 @@
 #include <QHBoxLayout>
 #include <QScrollArea>
 #include <QMap>
-
-
 #include <thread>
 
 class gui_farm_info_area : public QObject

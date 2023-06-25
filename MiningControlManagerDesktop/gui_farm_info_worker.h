@@ -24,6 +24,7 @@ protected:
 
 public:
     explicit gui_farm_info_worker(user_data::WORKER WORKER);
+    ~gui_farm_info_worker();
 
     QVBoxLayout *main_lay;
     QWidget *top_small_block;

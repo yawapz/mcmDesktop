@@ -32,9 +32,6 @@ class gui_farm_list_area : public QWidget
 public:
     explicit gui_farm_list_area(QWidget *parent = nullptr);
     ~gui_farm_list_area();
-
-
-
 private:
     thread_refresh_data *refresher;
     gui_farm_info_area *farm_info_arr;
@@ -43,8 +40,6 @@ private:
 
     QString login;
     QString password;
-    //QString RSI_KEY
-
     user_data data;
 
     QVBoxLayout* main_area;
@@ -74,7 +69,6 @@ public slots:
     void build_interface();
 
 private slots:
-    //void clicked_on_refresh_button();
     void slot_accept_new_user_data(user_data);
     void TopMenuEvent(QAction*);
     void slot_disable_interface();
@@ -90,10 +84,17 @@ signals:
     void signal_send_data_for_workers_settings(QString, QString, user_data);
     void signal_accept_new_user_data(user_data);
     void signal_new_pos(QPoint, QSize);
+    void signal_update_worker(user_data::WORKER);
 
 private:
     unsigned short int grand_panel_base_height;
+
     QGridLayout *H_block;
+    int count_panel_obj;
+    QList<QPair<QLabel*, QPair<QString, unsigned long long>>> H_block_widgets;
+
+    void H_block_refresh();
+    void v_rig_refresh();
 
     QLabel *total_rig_panel;
     QLabel *total_gpu_panel;
