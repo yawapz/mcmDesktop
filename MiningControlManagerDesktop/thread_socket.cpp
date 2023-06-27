@@ -25,14 +25,12 @@ thread_socket::~thread_socket()
 
 void thread_socket::run()
 {
-    qDebug() << "socket run";
     emit signal_accept_host_data("127.0.0.1", 48048);
     this->exec();
 }
 
 void thread_socket::slot_accept_host_data(QString h, int p)
 {
-    qDebug() << "socket connected";
     host = h;
     port = p;
     soc->connectToHost(h, p);
@@ -140,7 +138,6 @@ void thread_socket::slot_read_answer()
 {
     if(command == "get_user_data")
     {
-        //soc->waitForReadyRead(1000);
         QByteArray barr = soc->readAll();
         QDataStream stream(&barr, QIODevice::ReadOnly);
         QJsonObject jsonObject;

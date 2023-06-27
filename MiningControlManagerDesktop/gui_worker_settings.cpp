@@ -6,6 +6,7 @@ gui_worker_settings::gui_worker_settings(QWidget *parent)
     this->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     this->setStyleSheet("QWidget {color: white; background-color: #22262b};");
 
+    QObject::connect(this, SIGNAL(signal_send_user_data(user_data)), this, SLOT(slot_accept_new_user_data(user_data)));
     QObject::connect(this, SIGNAL(signal_new_pos(QPoint, QSize)), this, SLOT(slot_accept_new_pos(QPoint, QSize)));
     QObject::connect(this, SIGNAL(signal_inc_data(QString,QString,user_data)),this, SLOT(slot_accept_inc_data(QString,QString,user_data)));
     QObject::connect(this, SIGNAL(signal_data_accepted()),this, SLOT(slot_build_interface()));
@@ -159,6 +160,12 @@ void gui_worker_settings::slot_check_result_operation(QString req, QString cmd)
 void gui_worker_settings::slot_accept_new_pos(QPoint new_pos, QSize size)
 {
     this->move(new_pos.x() + (size.width() / 2) - 150, new_pos.y() + 300);
+}
+
+void gui_worker_settings::slot_accept_new_user_data(user_data new_data)
+{
+    data = new_data;
+    slot_build_interface();
 }
 
 bool gui_worker_settings::eventFilter(QObject *obj, QEvent *event)

@@ -45,6 +45,7 @@ private slots:
     void slot_add_worker();
     void slot_check_result_operation(QString, QString);
     void slot_accept_new_pos(QPoint, QSize);
+    void slot_accept_new_user_data(user_data);
 
 signals:
     void signal_inc_data(QString, QString, user_data);

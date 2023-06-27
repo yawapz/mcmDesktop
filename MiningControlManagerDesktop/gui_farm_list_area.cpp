@@ -6,8 +6,9 @@ gui_farm_list_area::gui_farm_list_area(QWidget *parent)
     this->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint);
     this->eventFilterblock = false;
     this->moving = false;
-    //qDebug() << "Основной поток " << QThread::currentThreadId();
+
     QObject::connect(this, SIGNAL(signal_send_user_data(user_data)), this, SLOT(slot_accept_new_user_data(user_data)), Qt::UniqueConnection);
+
     this->main_area = new QVBoxLayout();
     this->top_button_panel = new QWidget();
     this->grand_info_panel = new QWidget();
@@ -20,6 +21,10 @@ gui_farm_list_area::gui_farm_list_area(QWidget *parent)
     QObject::connect(this, &gui_farm_list_area::send_authorization_data, this->farm_info_arr,  &gui_farm_info_area::signal_accept_data);
 
     this->user_settings = new gui_user_settings();
+    QObject::connect(this, SIGNAL(send_authorization_data(QString,QString,user_data)), user_settings, SIGNAL(signal_accept_user_data(QString,QString,user_data)));
+    QObject::connect(user_settings, SIGNAL(signal_unlock()), this, SLOT(slot_active_interface()));
+    QObject::connect(this, SIGNAL(signal_show_user_settings()), this, SLOT(slot_disable_interface()));
+    QObject::connect(this, SIGNAL(signal_new_pos(QPoint, QSize)), user_settings, SIGNAL(signal_new_pos(QPoint, QSize)));
     QObject::connect(user_settings, SIGNAL(signal_change_user_data(QString, QString, QString, QString)), this, SIGNAL(signal_change_user_data(QString, QString, QString, QString)));
     QObject::connect(user_settings, SIGNAL(signal_delete_user(QString, QString)), this, SIGNAL(signal_delete_user(QString, QString)));
     QObject::connect(this, SIGNAL(signal_send_answer_resault(QString,QString)), user_settings, SIGNAL(signal_send_answer_resault(QString,QString)));
@@ -29,15 +34,13 @@ gui_farm_list_area::gui_farm_list_area(QWidget *parent)
 
     this->worker_settings = new gui_worker_settings();
     QObject::connect(worker_settings, SIGNAL(signal_get_user_data(QString)), this, SIGNAL(signal_get_user_data(QString)), Qt::UniqueConnection);
-    //QObject::connect(this, SIGNAL(signal_send_user_data(user_data)), worker_settings, SIGNAL(signal_send_user_data(user_data)));
+    QObject::connect(this, SIGNAL(signal_send_user_data(user_data)), worker_settings, SIGNAL(signal_send_user_data(user_data)));
     QObject::connect(worker_settings, SIGNAL(signal_create_new_worker(QString)), this, SIGNAL(signal_create_new_worker(QString)), Qt::UniqueConnection);
     QObject::connect(worker_settings, SIGNAL(signal_delete_worker(QString)), this, SIGNAL(signal_delete_worker(QString)), Qt::UniqueConnection);
     QObject::connect(this, SIGNAL(signal_send_answer_resault(QString,QString)), worker_settings, SIGNAL(signal_send_answer_resault(QString,QString)));
-
     QObject::connect(this, SIGNAL(signal_show_worker_settings()), worker_settings, SLOT(show()));
     QObject::connect(this, SIGNAL(signal_exit_prog()), worker_settings, SLOT(close()));
     QObject::connect(this, SIGNAL(signal_new_pos(QPoint, QSize)), worker_settings, SIGNAL(signal_new_pos(QPoint, QSize)));
-    //QObject::connect(worker_settings, SIGNAL(signal_send_data(user_data)), this, SLOT(slot_accept_new_user_data(user_data)));
     QObject::connect(this, SIGNAL(signal_show_worker_settings()), this, SLOT(slot_disable_interface()));
     QObject::connect(worker_settings, SIGNAL(signal_unlock()), this, SLOT(slot_active_interface()));
     QObject::connect(this, SIGNAL(signal_send_data_for_workers_settings(QString, QString, user_data)), worker_settings, SIGNAL(signal_inc_data(QString,QString,user_data)));
@@ -439,6 +442,7 @@ void gui_farm_list_area::TopMenuEvent(QAction* act)
     }
     else if(act->text() == "User settings")
     {
+        emit signal_new_pos(this->pos(), this->size());
         emit signal_show_user_settings();
     }
     else if(act->text() == "Worker settings")
