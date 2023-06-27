@@ -54,20 +54,16 @@ gui_login_area::gui_login_area(QWidget *parent)
         this->log = new thread_logger();
                 this->log->start();
 
-        this->access = false;
-        this->soc = new QTcpSocket();
-        this->soc2 = new QTcpSocket();
-        this->data = new user_data();
-        QObject::connect(soc, SIGNAL(readyRead()), this, SLOT(access_checker()));
-        QObject::connect(soc2, SIGNAL(readyRead()), this, SLOT(accept_json()));
+        QObject::connect(this, SIGNAL(signal_send_answer_resault(QString, QString)), this, SLOT(access_checker(QString, QString)));
+        QObject::connect(this, SIGNAL(signal_send_user_data(user_data)), this, SLOT(accept_json(user_data)));
 }
 
 gui_login_area::~gui_login_area()
 {
-    soc->deleteLater();
-    soc2->deleteLater();
+    resault->deleteLater();
+    login_line->deleteLater();
+    pw_line->deleteLater();
     log->deleteLater();
-    data->deleteLater();
 }
 
 void gui_login_area::keyReleaseEvent(QKeyEvent *event)
@@ -80,77 +76,8 @@ void gui_login_area::keyReleaseEvent(QKeyEvent *event)
 
 void gui_login_area::authorization()
 {
-    QByteArray *barr = new QByteArray();
-    QDataStream stream(barr, QIODevice::Append);
-    QString command = "login";
-    stream << command;
-
-    QString user_login = this->login_line->text();
-    QString user_password = this->pw_line->text();
-    stream << user_login;
-    stream << user_password;
-
-    if(!soc->isOpen())
-        soc->connectToHost("127.0.0.1", 48048);
-    soc->waitForConnected(1000);
-    soc->write(*barr);
-    soc->flush();
-    delete barr;
-
+    emit signal_login(this->login_line->text(), this->pw_line->text());
     this->setEnabled(false);
-
-    QEventLoop *loop = new QEventLoop;
-    QTimer t;
-    t.connect(&t, &QTimer::timeout, loop, &QEventLoop::quit);
-    t.connect(soc, SIGNAL(readyRead()), loop, SLOT(quit()));
-    t.start(5*1000); // 5 sec
-    t.setSingleShot(true);
-    loop->exec();
-    loop->deleteLater();
-
-    if(this->access)
-    {
-        QByteArray *barr2 = new QByteArray();
-        QDataStream stream(barr2, QIODevice::Append);
-        QString command = "get_user_data";
-        QString login = this->login_line->text();
-
-        stream << command;
-        stream << login;
-        if(!soc2->isOpen())
-            soc2->connectToHost("127.0.0.1", 48048);
-        soc2->waitForConnected(1000);
-        soc2->write(*barr2);
-        soc2->flush();
-        delete barr2;
-
-        QEventLoop *loop2 = new QEventLoop;
-        QTimer t2;
-        t2.connect(&t2, &QTimer::timeout, loop2, &QEventLoop::quit);
-        t2.connect(soc2, SIGNAL(readyRead()), loop2, SLOT(quit()));
-        t2.start(5*1000); // 5 sec
-        loop2->exec();
-        loop2->deleteLater();
-        // Перенос данных в следующее окно после успешной авторизации + возможно добавить ключ шифрования на сессию
-        //data->JSON_from_local_directory_file();
-        data->JSON_server_to_desktop_parcer();
-
-
-        QObject::connect(this, SIGNAL(send_authorization_data_to_another_form(QString, QString, user_data)), parent(), SLOT(accept_authorization_data(QString, QString, user_data)));
-        emit this->send_authorization_data_to_another_form(this->login_line->text(), this->pw_line->text(), *data);
-        //--------------------------------------------------------------
-        this->gui_transit();
-        emit this->log->signal_write_to_logfile("Successful authorization for " + this->login_line->text());
-    }
-    else
-    {
-        this->setEnabled(true);
-        this->pw_line->clear();
-        this->resault->setStyleSheet("QLabel {color : red;}");
-        this->resault->setText("Error");
-        emit this->log->signal_write_to_logfile("Error authorization for " + this->login_line->text());
-    }
-    this->log->quit();
 }
 
 void gui_login_area::gui_transit()
@@ -165,33 +92,32 @@ void gui_login_area::registration()
     emit this->call_reg_form();
 }
 
-void gui_login_area::access_checker()
+void gui_login_area::access_checker(QString req, QString cmd)
 {
-    soc->waitForReadyRead(1000);
-    QString req = "no";
-
-    QByteArray barr = soc->readAll();
-    QDataStream stream(&barr, QIODevice::ReadOnly);
-    stream >> req;
-
-    if(req == "yes")
+    if(cmd == "login")
     {
-        this->access = true;
+        if(req == "yes")
+        {
+            emit signal_get_user_data(this->login_line->text());
+        }
+        else
+        {
+            this->setEnabled(true);
+            this->pw_line->clear();
+            this->resault->setStyleSheet("QLabel {color : red;}");
+            this->resault->setText("Error");
+            emit this->log->signal_write_to_logfile("Error authorization for " + this->login_line->text());
+        }
     }
-    else
-    {
-        this->access = false;
-    }
-    soc->waitForDisconnected(1000);
 }
 
-void gui_login_area::accept_json()
+void gui_login_area::accept_json(user_data new_data)
 {
-    soc2->waitForReadyRead(1000);
-    QByteArray barr = soc2->readAll();
-    QDataStream stream(&barr, QIODevice::ReadOnly);
-    QJsonObject jsonObject;
-    stream >> jsonObject;
-    this->data->main_json_file = jsonObject;
-    soc2->waitForDisconnected(1000);
+    data = new_data;
+    data.JSON_server_to_desktop_parcer();
+    QObject::connect(this, SIGNAL(send_authorization_data_to_another_form(QString, QString, user_data)), parent(), SLOT(accept_authorization_data(QString, QString, user_data)));
+    emit this->send_authorization_data_to_another_form(this->login_line->text(), this->pw_line->text(), data);
+    this->gui_transit();
+    emit this->log->signal_write_to_logfile("Successful authorization for " + this->login_line->text());
+    this->log->quit();
 }

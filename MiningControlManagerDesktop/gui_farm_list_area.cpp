@@ -6,11 +6,8 @@ gui_farm_list_area::gui_farm_list_area(QWidget *parent)
     this->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint);
     this->eventFilterblock = false;
     this->moving = false;
-    qDebug() << "Основной поток " << QThread::currentThreadId();
-    QObject::connect(this, SIGNAL(signal_accept_new_user_data(user_data)), this, SLOT(slot_accept_new_user_data(user_data)));
-    this->refresher = new thread_refresh_data();
-    QObject::connect(this, &gui_farm_list_area::send_authorization_data, refresher,  &thread_refresh_data::signal_accept_data);
-    QObject::connect(refresher, SIGNAL(signal_send_new_data(user_data)), this, SLOT(slot_accept_new_user_data(user_data)));
+    //qDebug() << "Основной поток " << QThread::currentThreadId();
+    QObject::connect(this, SIGNAL(signal_send_user_data(user_data)), this, SLOT(slot_accept_new_user_data(user_data)), Qt::UniqueConnection);
     this->main_area = new QVBoxLayout();
     this->top_button_panel = new QWidget();
     this->grand_info_panel = new QWidget();
@@ -20,20 +17,30 @@ gui_farm_list_area::gui_farm_list_area(QWidget *parent)
     this->rig_info_panel = new QHBoxLayout();
 
     this->farm_info_arr  = new gui_farm_info_area();
+    QObject::connect(this, &gui_farm_list_area::send_authorization_data, this->farm_info_arr,  &gui_farm_info_area::signal_accept_data);
+
     this->user_settings = new gui_user_settings();
-    this->worker_settings = new gui_worker_settings();
+    QObject::connect(user_settings, SIGNAL(signal_change_user_data(QString, QString, QString, QString)), this, SIGNAL(signal_change_user_data(QString, QString, QString, QString)));
+    QObject::connect(user_settings, SIGNAL(signal_delete_user(QString, QString)), this, SIGNAL(signal_delete_user(QString, QString)));
+    QObject::connect(this, SIGNAL(signal_send_answer_resault(QString,QString)), user_settings, SIGNAL(signal_send_answer_resault(QString,QString)));
     QObject::connect(this, SIGNAL(signal_exit_prog()), user_settings, SIGNAL(signal_exit_prog()));
     QObject::connect(this, SIGNAL(signal_show_user_settings()), user_settings, SLOT(show()));
+    QObject::connect(this, SIGNAL(signal_exit_prog()), user_settings, SLOT(close()));
+
+    this->worker_settings = new gui_worker_settings();
+    QObject::connect(worker_settings, SIGNAL(signal_get_user_data(QString)), this, SIGNAL(signal_get_user_data(QString)), Qt::UniqueConnection);
+    //QObject::connect(this, SIGNAL(signal_send_user_data(user_data)), worker_settings, SIGNAL(signal_send_user_data(user_data)));
+    QObject::connect(worker_settings, SIGNAL(signal_create_new_worker(QString)), this, SIGNAL(signal_create_new_worker(QString)), Qt::UniqueConnection);
+    QObject::connect(worker_settings, SIGNAL(signal_delete_worker(QString)), this, SIGNAL(signal_delete_worker(QString)), Qt::UniqueConnection);
+    QObject::connect(this, SIGNAL(signal_send_answer_resault(QString,QString)), worker_settings, SIGNAL(signal_send_answer_resault(QString,QString)));
+
     QObject::connect(this, SIGNAL(signal_show_worker_settings()), worker_settings, SLOT(show()));
     QObject::connect(this, SIGNAL(signal_exit_prog()), worker_settings, SLOT(close()));
     QObject::connect(this, SIGNAL(signal_new_pos(QPoint, QSize)), worker_settings, SIGNAL(signal_new_pos(QPoint, QSize)));
-    QObject::connect(worker_settings, SIGNAL(signal_send_data(user_data)), this, SIGNAL(signal_accept_new_user_data(user_data)));
+    //QObject::connect(worker_settings, SIGNAL(signal_send_data(user_data)), this, SLOT(slot_accept_new_user_data(user_data)));
     QObject::connect(this, SIGNAL(signal_show_worker_settings()), this, SLOT(slot_disable_interface()));
     QObject::connect(worker_settings, SIGNAL(signal_unlock()), this, SLOT(slot_active_interface()));
     QObject::connect(this, SIGNAL(signal_send_data_for_workers_settings(QString, QString, user_data)), worker_settings, SIGNAL(signal_inc_data(QString,QString,user_data)));
-    QObject::connect(this, SIGNAL(signal_exit_prog()), user_settings, SLOT(close()));
-    QObject::connect(this, &gui_farm_list_area::send_authorization_data, this->farm_info_arr,  &gui_farm_info_area::signal_accept_data);
-
 
         v_rig_main_panel_widget->setAlignment(Qt::AlignmentFlag::AlignTop);
         //v_rig_main_panel_widget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -58,7 +65,6 @@ gui_farm_list_area::gui_farm_list_area(QWidget *parent)
 
 gui_farm_list_area::~gui_farm_list_area()
 {
-    this->refresher->deleteLater();
     this->main_area->deleteLater();
     this->top_button_panel->deleteLater();
     this->grand_info_panel->deleteLater();
@@ -120,7 +126,7 @@ void gui_farm_list_area::build_top_button_panel()
 //--------------------------------------------------------------------------------------------------------
         // кнопка refresh
     QPushButton *refresh_button = new QPushButton();
-    QObject::connect(refresh_button, SIGNAL(clicked(bool)), refresher, SIGNAL(signal_start()));
+    QObject::connect(refresh_button, SIGNAL(clicked(bool)), this, SLOT(slot_emit_data_req()));
     refresh_button->setCursor(Qt::PointingHandCursor);
     QPixmap *icon = new QPixmap("res/refresh.svg");
     QPainter qp = QPainter(icon);
@@ -414,7 +420,6 @@ void gui_farm_list_area::slot_accept_new_user_data(user_data new_data)
 //    this->build_interface();
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     this->data = new_data;
-
     H_block_refresh();
     v_rig_refresh();
     emit this->send_authorization_data(this->login, this->password, this->data);
@@ -454,6 +459,11 @@ void gui_farm_list_area::slot_active_interface()
 {
     eventFilterblock = false;
     this->setEnabled(true);
+}
+
+void gui_farm_list_area::slot_emit_data_req()
+{
+    emit signal_get_user_data(login);
 }
 
 void gui_farm_list_area::H_block_refresh()

@@ -38,19 +38,13 @@ private:
     unsigned short int current_element;
     void closeEvent(QCloseEvent*);
 
-    QString host;
-    int port;
-
-
 private slots:
     void slot_accept_inc_data(QString, QString, user_data);
     void slot_build_interface();
     void slot_delete_worker();
     void slot_add_worker();
-    void slot_check_result_operation();
-    void slot_accept_json();
+    void slot_check_result_operation(QString, QString);
     void slot_accept_new_pos(QPoint, QSize);
-    void slot_host_data(QString, int);
 
 signals:
     void signal_inc_data(QString, QString, user_data);
@@ -58,7 +52,13 @@ signals:
     void signal_data_accepted();
     void signal_unlock();
     void signal_new_pos(QPoint, QSize);
-    void signal_host_data(QString, int);
+
+    void signal_create_new_worker(QString);
+    void signal_delete_worker(QString);
+    void signal_send_answer_resault(QString, QString);
+
+    void signal_get_user_data(QString);
+    void signal_send_user_data(user_data);
 
 protected:
     bool eventFilter(QObject *, QEvent *);

@@ -35,10 +35,8 @@ server::~server()
 void server::slot_new_connection()
 {
     QTcpSocket* nextClient = this->nextPendingConnection();
-    t.start();
     QObject::connect(nextClient, SIGNAL(readyRead()), this, SLOT(slot_routing()));
     QObject::connect(nextClient, SIGNAL(disconnected()), this, SLOT(slot_disconnected()));
-
     this->connections.append(nextClient);
 }
 
@@ -52,6 +50,7 @@ void server::slot_disconnected()
 
 void server::slot_routing()
 {
+    t.start();
     QTcpSocket* client = (QTcpSocket*)sender();
     QDataStream stream(client->readAll());
 
@@ -241,260 +240,12 @@ void server::slot_routing()
                         // Вычленение параметров воркера
                         worker_query.first();
                         QSqlRecord worker_record = worker_query.record();
-
-//                        worker.name = worker_query.value(worker_record.indexOf("name")).toString();
-//                        worker.CPU_info = worker_query.value(worker_record.indexOf("cpu_info")).toString();
-//                        worker.CPU_temperature = worker_query.value(worker_record.indexOf("cpu_temperature")).toString();
                         worker.ID = worker_query.value(worker_record.indexOf("id")).toString();
-//                        worker.LA1 = worker_query.value(worker_record.indexOf("la1")).toString();
-//                        worker.LA5 = worker_query.value(worker_record.indexOf("la5")).toString();
-//                        worker.LA15 = worker_query.value(worker_record.indexOf("la15")).toString();
-//                        worker.MAC = worker_query.value(worker_record.indexOf("mac")).toString();
-//                        worker.ext_ip = worker_query.value(worker_record.indexOf("ext_ip")).toString();
-//                        worker.local_ip = worker_query.value(worker_record.indexOf("local_ip")).toString();
-//                        worker.RAM_free = worker_query.value(worker_record.indexOf("ram_free")).toString();
-//                        worker.RAM_total = worker_query.value(worker_record.indexOf("ram_total")).toString();
-//                        worker.RAM_used = worker_query.value(worker_record.indexOf("ram_used")).toString();
-//                        worker.disk_free_space = worker_query.value(worker_record.indexOf("disk_free_space")).toString();
-//                        worker.disk_model = worker_query.value(worker_record.indexOf("disk_model")).toString();
-//                        worker.disk_size = worker_query.value(worker_record.indexOf("disk_size")).toString();
-//                        worker.algorithm = worker_query.value(worker_record.indexOf("algorithm")).toString();
-//                        worker.algorithm2 = worker_query.value(worker_record.indexOf("algorithm2")).toString();
-//                        worker.amd_version = worker_query.value(worker_record.indexOf("amd_version")).toString();
-//                        worker.nvidia_version = worker_query.value(worker_record.indexOf("nvidia_version")).toString();
-//                        worker.core_version = worker_query.value(worker_record.indexOf("core_version")).toString();
                         worker.last_online = worker_query.value(worker_record.indexOf("last_online")).toLongLong();
-//                        worker.startup = worker_query.value(worker_record.indexOf("startup")).toLongLong();
                         worker.status = worker_query.value(worker_record.indexOf("status")).toBool();
                         worker.startup = worker_query.value(worker_record.indexOf("startup")).toLongLong();
-//                        worker.server = worker_query.value(worker_record.indexOf("server")).toString();
-//                        worker.server2 = worker_query.value(worker_record.indexOf("server2")).toString();
-//                        worker.electricity_cost = worker_query.value(worker_record.indexOf("electricity_cost")).toDouble();
-//                        worker.version = worker_query.value(worker_record.indexOf("version")).toString();
-//                        worker.user = worker_query.value(worker_record.indexOf("user_address")).toString();
-//                        worker.user2 = worker_query.value(worker_record.indexOf("user2_address")).toString();
-//                        worker.uptime = worker_query.value(worker_record.indexOf("uptime")).toLongLong();
-//                        worker.total_stale_shares2 = worker_query.value(worker_record.indexOf("total_stale_shares2")).toInt();
-//                        worker.total_stale_shares = worker_query.value(worker_record.indexOf("total_stale_shares")).toInt();
-//                        worker.total_accepted_shares2 = worker_query.value(worker_record.indexOf("total_accepted_shares2")).toInt();
-//                        worker.total_accepted_shares = worker_query.value(worker_record.indexOf("total_accepted_shares")).toInt();
-//                        worker.total_invalid_shares2 = worker_query.value(worker_record.indexOf("total_invalid_shares2")).toInt();
-//                        worker.total_invalid_shares = worker_query.value(worker_record.indexOf("total_invalid_shares")).toInt();
-//                        worker.total_rejected_shares = worker_query.value(worker_record.indexOf("total_rejected_shares")).toInt();
-//                        worker.total_rejected_shares2 = worker_query.value(worker_record.indexOf("total_rejected_shares2")).toInt();
-//                        worker.motherboard_data = worker_query.value(worker_record.indexOf("motherboard_data")).toString();
-//                        worker.miner = worker_query.value(worker_record.indexOf("miner")).toString();
-
                         worker.str_json = worker_query.value(worker_record.indexOf("json")).toString();
                         worker.worker_json = QJsonDocument::fromJson(worker.str_json.toUtf8()).object();
-
-//                        // GPU
-//                        QString query_devices_size = "SELECT cardinality(devices) FROM \"worker_" + worker_id_list[i] + "\""
-//                        " ORDER BY inc_timestamp DESC LIMIT 1;";
-//                        QSqlQuery worker_query(this->DB);
-//                        if(!worker_query.exec(query_devices_size))
-//                        {
-//                            qDebug() << "Error Query - " << worker_query.lastError().type() << " - " << worker_query.lastError().text();
-//                            qDebug() << worker_query.lastQuery();
-//                        }
-//                        else
-//                        {
-//                            worker_query.first();
-//                            int count_devices = 0;
-//                            count_devices = worker_query.value(worker_query.record().indexOf("cardinality")).toInt();
-//                            for (int j = 0; j < count_devices; ++j)
-//                            {
-//                                GPU gpu;
-//                                QString query_gpu_name = "SELECT (devices[" + QString::number(j + 1) + "]).name "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                QSqlQuery gpu_query(this->DB);
-//                                gpu_query.exec(query_gpu_name);
-//                                gpu_query.first();
-//                                gpu.name = gpu_query.value(gpu_query.record().indexOf("name")).toString();
-
-//                                QString query_gpu_bus_id = "SELECT (devices[" + QString::number(j + 1) + "]).bus_id "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_bus_id);
-//                                gpu_query.first();
-//                                gpu.bus_id = gpu_query.value(gpu_query.record().indexOf("bus_id")).toString();
-
-//                                QString query_gpu_vendor = "SELECT (devices[" + QString::number(j + 1) + "]).vendor "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_vendor);
-//                                gpu_query.first();
-//                                gpu.vendor = gpu_query.value(gpu_query.record().indexOf("vendor")).toString();
-
-//                                QString query_gpu_total_memory = "SELECT (devices[" + QString::number(j + 1) + "]).total_memory "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_total_memory);
-//                                gpu_query.first();
-//                                gpu.total_memory = gpu_query.value(gpu_query.record().indexOf("total_memory")).toString();
-
-//                                QString query_gpu_VBIOS_version = "SELECT (devices[" + QString::number(j + 1) + "]).VBIOS_version "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_VBIOS_version);
-//                                gpu_query.first();
-//                                gpu.VBIOS_version = gpu_query.value(gpu_query.record().indexOf("VBIOS_version")).toString();
-
-//                                QString query_gpu_min_pl = "SELECT (devices[" + QString::number(j + 1) + "]).min_pl "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_min_pl);
-//                                gpu_query.first();
-//                                gpu.min_pl = gpu_query.value(gpu_query.record().indexOf("min_pl")).toString();
-
-//                                QString query_gpu_default_pl = "SELECT (devices[" + QString::number(j + 1) + "]).default_pl "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_default_pl);
-//                                gpu_query.first();
-//                                gpu.default_pl = gpu_query.value(gpu_query.record().indexOf("default_pl")).toString();
-
-//                                QString query_gpu_max_pl = "SELECT (devices[" + QString::number(j + 1) + "]).max_pl "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_max_pl);
-//                                gpu_query.first();
-//                                gpu.max_pl = gpu_query.value(gpu_query.record().indexOf("max_pl")).toString();
-
-//                                QString query_gpu_id = "SELECT (devices[" + QString::number(j + 1) + "]).gpu_id "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_id);
-//                                gpu_query.first();
-//                                gpu.gpu_id = gpu_query.value(gpu_query.record().indexOf("gpu_id")).toInt();
-
-//                                QString query_gpu_fan_speed = "SELECT (devices[" + QString::number(j + 1) + "]).fan_speed "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_fan_speed);
-//                                gpu_query.first();
-//                                gpu.fan_speed = gpu_query.value(gpu_query.record().indexOf("fan_speed")).toInt();
-
-//                                QString query_gpu_core_clock = "SELECT (devices[" + QString::number(j + 1) + "]).core_clock "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_core_clock);
-//                                gpu_query.first();
-//                                gpu.core_clock = gpu_query.value(gpu_query.record().indexOf("core_clock")).toInt();
-
-//                                QString query_gpu_memory_clock = "SELECT (devices[" + QString::number(j + 1) + "]).memory_clock "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_memory_clock);
-//                                gpu_query.first();
-//                                gpu.memory_clock = gpu_query.value(gpu_query.record().indexOf("memory_clock")).toInt();
-
-//                                QString query_gpu_power_usage = "SELECT (devices[" + QString::number(j + 1) + "]).power_usage "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_power_usage);
-//                                gpu_query.first();
-//                                gpu.power_usage = gpu_query.value(gpu_query.record().indexOf("power_usage")).toInt();
-
-//                                QString query_gpu_temperature = "SELECT (devices[" + QString::number(j + 1) + "]).temperature "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_temperature);
-//                                gpu_query.first();
-//                                gpu.temperature = gpu_query.value(gpu_query.record().indexOf("temperature")).toInt();
-
-//                                QString query_gpu_max_core_freq = "SELECT (devices[" + QString::number(j + 1) + "]).max_core_freq "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_max_core_freq);
-//                                gpu_query.first();
-//                                gpu.max_core_freq = gpu_query.value(gpu_query.record().indexOf("max_core_freq")).toInt();
-
-//                                QString query_gpu_max_mem_freq = "SELECT (devices[" + QString::number(j + 1) + "]).max_mem_freq "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_max_mem_freq);
-//                                gpu_query.first();
-//                                gpu.max_mem_freq = gpu_query.value(gpu_query.record().indexOf("max_mem_freq")).toInt();
-
-//                                QString query_gpu_speed = "SELECT (devices[" + QString::number(j + 1) + "]).speed "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_speed);
-//                                gpu_query.first();
-//                                gpu.speed = gpu_query.value(gpu_query.record().indexOf("speed")).toInt();
-
-//                                QString query_gpu_speed2 = "SELECT (devices[" + QString::number(j + 1) + "]).speed2 "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_speed2);
-//                                gpu_query.first();
-//                                gpu.speed2 = gpu_query.value(gpu_query.record().indexOf("speed2")).toInt();
-
-//                                QString query_gpu_accepted_shares = "SELECT (devices[" + QString::number(j + 1) + "]).accepted_shares "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_accepted_shares);
-//                                gpu_query.first();
-//                                gpu.accepted_shares = gpu_query.value(gpu_query.record().indexOf("accepted_shares")).toInt();
-
-//                                QString query_gpu_accepted_shares2 = "SELECT (devices[" + QString::number(j + 1) + "]).accepted_shares2 "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_accepted_shares2);
-//                                gpu_query.first();
-//                                gpu.accepted_shares2 = gpu_query.value(gpu_query.record().indexOf("accepted_shares2")).toInt();
-
-//                                QString query_gpu_rejected_shares = "SELECT (devices[" + QString::number(j + 1) + "]).rejected_shares "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_rejected_shares);
-//                                gpu_query.first();
-//                                gpu.rejected_shares = gpu_query.value(gpu_query.record().indexOf("rejected_shares")).toInt();
-
-//                                QString query_gpu_rejected_shares2 = "SELECT (devices[" + QString::number(j + 1) + "]).rejected_shares2 "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_rejected_shares2);
-//                                gpu_query.first();
-//                                gpu.rejected_shares2 = gpu_query.value(gpu_query.record().indexOf("rejected_shares2")).toInt();
-
-//                                QString query_gpu_stale_shares = "SELECT (devices[" + QString::number(j + 1) + "]).stale_shares "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_stale_shares);
-//                                gpu_query.first();
-//                                gpu.stale_shares = gpu_query.value(gpu_query.record().indexOf("stale_shares")).toInt();
-
-//                                QString query_gpu_stale_shares2 = "SELECT (devices[" + QString::number(j + 1) + "]).stale_shares2 "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_stale_shares2);
-//                                gpu_query.first();
-//                                gpu.stale_shares2 = gpu_query.value(gpu_query.record().indexOf("stale_shares2")).toInt();
-
-//                                QString query_gpu_invalid_shares = "SELECT (devices[" + QString::number(j + 1) + "]).invalid_shares "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_invalid_shares);
-//                                gpu_query.first();
-//                                gpu.invalid_shares = gpu_query.value(gpu_query.record().indexOf("invalid_shares")).toInt();
-
-//                                QString query_gpu_invalid_shares2 = "SELECT (devices[" + QString::number(j + 1) + "]).invalid_shares2 "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_invalid_shares2);
-//                                gpu_query.first();
-//                                gpu.invalid_shares2 = gpu_query.value(gpu_query.record().indexOf("invalid_shares2")).toInt();
-
-//                                QString query_gpu_memory_temperature = "SELECT (devices[" + QString::number(j + 1) + "]).memory_temperature "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_memory_temperature);
-//                                gpu_query.first();
-//                                gpu.memory_temperature = gpu_query.value(gpu_query.record().indexOf("memory_temperature")).toInt();
-
-//                                QString query_gpu_set_fan_speed = "SELECT (devices[" + QString::number(j + 1) + "]).set_fan_speed "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_set_fan_speed);
-//                                gpu_query.first();
-//                                gpu.set_fan_speed = gpu_query.value(gpu_query.record().indexOf("set_fan_speed")).toInt();
-
-//                                QString query_gpu_set_core = "SELECT (devices[" + QString::number(j + 1) + "]).set_core "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_set_core);
-//                                gpu_query.first();
-//                                gpu.set_core = gpu_query.value(gpu_query.record().indexOf("set_core")).toInt();
-
-//                                QString query_gpu_set_mem = "SELECT (devices[" + QString::number(j + 1) + "]).set_mem "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_set_mem);
-//                                gpu_query.first();
-//                                gpu.set_mem = gpu_query.value(gpu_query.record().indexOf("set_mem")).toInt();
-
-//                                QString query_gpu_set_pl = "SELECT (devices[" + QString::number(j + 1) + "]).set_pl "
-//                                "FROM \"worker_" + worker_id_list[i] + "\" ORDER BY inc_timestamp DESC LIMIT 1;";
-//                                gpu_query.exec(query_gpu_set_pl);
-//                                gpu_query.first();
-//                                gpu.set_pl = gpu_query.value(gpu_query.record().indexOf("set_pl")).toInt();
-
-//                                worker.devices.push_back(gpu);
-//                            }
-//                        }
                         worker_list.push_back(worker);
                     }
 
@@ -505,43 +256,6 @@ void server::slot_routing()
             QJsonArray arr;
             for (int i = 0; i < worker_list.size(); ++i)
             {
-//                QJsonArray gpu_arr;
-//                for (auto gpu : worker_list[i].devices)
-//                {
-//                    QJsonObject obj;
-//                    obj.insert("name", gpu.name);
-//                    obj.insert("bus_id", gpu.bus_id);
-//                    obj.insert("gpu_id", gpu.gpu_id);
-//                    obj.insert("fan_speed", gpu.fan_speed);
-//                    obj.insert("core_clock", gpu.core_clock);
-//                    obj.insert("memory_clock", gpu.memory_clock);
-//                    obj.insert("power_usage", gpu.power_usage);
-//                    obj.insert("speed", gpu.speed);
-//                    obj.insert("speed2", gpu.speed2);
-//                    obj.insert("accepted_shares", gpu.accepted_shares);
-//                    obj.insert("accepted_shares2", gpu.accepted_shares2);
-//                    obj.insert("rejected_shares", gpu.rejected_shares);
-//                    obj.insert("rejected_shares2", gpu.rejected_shares2);
-//                    obj.insert("stale_shares", gpu.stale_shares);
-//                    obj.insert("stale_shares2", gpu.stale_shares2);
-//                    obj.insert("invalid_shares", gpu.invalid_shares);
-//                    obj.insert("invalid_shares2", gpu.invalid_shares2);
-//                    obj.insert("temperature", gpu.temperature);
-//                    obj.insert("memory_temperature", gpu.memory_temperature);
-//                    obj.insert("set_fan_speed", gpu.set_fan_speed);
-//                    obj.insert("set_core", gpu.set_core);
-//                    obj.insert("set_mem", gpu.set_mem);
-//                    obj.insert("set_pl", gpu.set_pl);
-//                    obj.insert("vendor", gpu.vendor);
-//                    obj.insert("VBIOS_version", gpu.VBIOS_version);
-//                    obj.insert("total_memory", gpu.total_memory);
-//                    obj.insert("min_pl", gpu.min_pl);
-//                    obj.insert("default_pl", gpu.default_pl);
-//                    obj.insert("max_pl", gpu.max_pl);
-//                    obj.insert("max_core_freq", gpu.max_core_freq);
-//                    obj.insert("max_mem_freq", gpu.max_mem_freq);
-//                    gpu_arr.push_back(obj);
-//                }
                 if(worker_list[i].worker_json.isEmpty())
                 {
                     QJsonArray gpu_arr;
@@ -599,6 +313,7 @@ void server::slot_routing()
             // Отправить данные клиенту
 
             req_stream << final_JSON_object;
+            req_stream << command;
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -628,16 +343,17 @@ void server::slot_routing()
                 qDebug() << "successful authentication user " + user_login ;
                 // ответ об успешной аунтификации
                 req_stream << QString("yes");
-                client->write(barr);
-                client->waitForConnected(1000);
             }
             else
             {
                 // ответ отказ аунтификации
                 req_stream << QString("no");
-                client->write(barr);
-                client->waitForConnected(1000);
+
             }
+            req_stream << command;
+            client->write(barr);
+            client->waitForConnected(1000);
+
         }
     }
     else if(command == "new_user")
@@ -667,20 +383,23 @@ void server::slot_routing()
                 {
                     qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
                     qDebug() << query.lastQuery();
+                    req_stream << QString("no");
                 }
                 else
                 {
                     qDebug() << "new user " + user_login;
                     // Отправить ответ об успешном добавлении в БД
                     req_stream << QString("yes");
-                    client->write(barr);
-                    client->waitForConnected(1000);
                 }
+                req_stream << command;
+                client->write(barr);
+                client->waitForConnected(1000);
             }
             else
             {
                 // Отправить ответ, что такой логин уже есть
                 req_stream << QString("busy");
+                req_stream << command;
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -735,6 +454,7 @@ void server::slot_routing()
                         qDebug() << query.lastQuery();
                         // ответ об отказе добавлении
                         req_stream << QString("no");
+                        req_stream << command;
                         client->write(barr);
                         client->waitForConnected(1000);
                         break;
@@ -814,6 +534,7 @@ void server::slot_routing()
                             qDebug() << query.lastQuery();
                             // ответ об отказе добавлении
                             req_stream << QString("no");
+                            req_stream << command;
                             client->write(barr);
                             client->waitForConnected(1000);
                             break;
@@ -823,6 +544,7 @@ void server::slot_routing()
                             qDebug() << "new worker " + new_worker_id;
                             // ответ об успешном добавлении
                             req_stream << QString("yes");
+                            req_stream << command;
                             client->write(barr);
                             client->waitForConnected(1000);
                             break;
@@ -839,6 +561,7 @@ void server::slot_routing()
         {
             // ответ об отказе добавлении
             req_stream << QString("no");
+            req_stream << command;
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -860,6 +583,7 @@ void server::slot_routing()
             qDebug() << query.lastQuery();
             // Отказ
             req_stream << QString("no");
+            req_stream << command;
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -873,6 +597,7 @@ void server::slot_routing()
                 qDebug() << query.lastQuery();
                 // Отказ
                 req_stream << QString("no");
+                req_stream << command;
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -881,6 +606,7 @@ void server::slot_routing()
                 qDebug() << "Worker " + worker_id + " deleted!";
                 // Отправка положительного результата
                 req_stream << QString("yes");
+                req_stream << command;
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -904,12 +630,14 @@ void server::slot_routing()
             qDebug() << query.lastQuery();
             // Ответ отказ
             req_stream << QString("no");
+            req_stream << command;
             client->write(barr);
             client->waitForConnected(1000);
         }
         else if(query.size() == 0)
         {
             req_stream << QString("no");
+            req_stream << command;
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -923,6 +651,7 @@ void server::slot_routing()
                 qDebug() << query.lastQuery();
                 // Ответ отказ
                 req_stream << QString("no");
+                req_stream << command;
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -979,6 +708,7 @@ void server::slot_routing()
                             {
                                 qDebug() << "The user " + user_login + " has been deleted!";
                                 req_stream << QString("yes");
+                                req_stream << command;
                                 client->write(barr);
                                 client->waitForConnected(1000);
                             }
@@ -987,6 +717,7 @@ void server::slot_routing()
                     else
                     {
                         req_stream << QString("no");
+                        req_stream << command;
                         client->write(barr);
                         client->waitForConnected(1000);
                     }
@@ -1004,6 +735,7 @@ void server::slot_routing()
                     {
                         qDebug() << "The user " + user_login + " has been deleted!";
                         req_stream << QString("yes");
+                        req_stream << command;
                         client->write(barr);
                         client->waitForConnected(1000);
                     }
@@ -1034,6 +766,7 @@ void server::slot_routing()
             qDebug() << query.lastQuery();
             // ответ об отменённой операции
             req_stream << QString("no");
+            req_stream << command;
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -1050,6 +783,7 @@ void server::slot_routing()
                     qDebug() << query.lastQuery();
                     // ответ об отменённой операции
                     req_stream << QString("no");
+                    req_stream << command;
                     client->write(barr);
                     client->waitForConnected(1000);
                 }
@@ -1065,6 +799,7 @@ void server::slot_routing()
                         qDebug() << query.lastQuery();
                         // ответ об отменённой операции
                         req_stream << QString("no");
+                        req_stream << command;
                         client->write(barr);
                         client->waitForConnected(1000);
                     }
@@ -1081,6 +816,7 @@ void server::slot_routing()
                                 qDebug() << query.lastQuery();
                                 // ответ об отменённой операции
                                 req_stream << QString("no");
+                                req_stream << command;
                                 client->write(barr);
                                 client->waitForConnected(1000);
                             }
@@ -1089,6 +825,7 @@ void server::slot_routing()
                                 qDebug() << "successful update data for user " + new_login ;
                                 // ответ об успешной операции
                                 req_stream << QString("yes");
+                                req_stream << command;
                                 client->write(barr);
                                 client->waitForConnected(1000);
                             }
@@ -1098,6 +835,7 @@ void server::slot_routing()
                             qDebug() << "successful update data for user " + new_login ;
                             // ответ об успешной операции
                             req_stream << QString("yes");
+                            req_stream << command;
                             client->write(barr);
                             client->waitForConnected(1000);
                         }
@@ -1108,6 +846,7 @@ void server::slot_routing()
             {
                 // ответ об отменённой операции
                 req_stream << QString("no");
+                req_stream << command;
                 client->write(barr);
                 client->waitForConnected(1000);
             }

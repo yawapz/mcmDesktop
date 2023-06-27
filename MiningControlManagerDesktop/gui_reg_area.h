@@ -22,15 +22,15 @@ public:
     ~gui_reg_area();
 
 signals:
-
+    void signal_create_new_user(QString, QString);
+    void signal_send_answer_resault(QString, QString);
 private:
     QLineEdit* login;
     QLineEdit* password;
-    QTcpSocket* soc;
 
 private slots:
     void on_click_send_button();
-    void accept_result();
+    void accept_result(QString, QString);
     void restart_programm();
     void unlock_form();
 };

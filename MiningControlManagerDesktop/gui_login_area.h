@@ -28,28 +28,31 @@ protected:
     void keyReleaseEvent(QKeyEvent* event) override;
 
 private:
-    QTcpSocket *soc;
-    QTcpSocket *soc2;
     QLabel* resault;
     QLineEdit* login_line;
     QLineEdit* pw_line;
-    user_data *data;
+    user_data data;
     thread_logger *log;
-    bool access;
 
 private slots:
     void authorization();
     void gui_transit();
 
     void registration();
-    void access_checker();
-    void accept_json();
+    void access_checker(QString, QString);
+    void accept_json(user_data);
 
 signals:
     void call_farm_list_form();
     void call_reg_form();
     void send_authorization_data_to_another_form(QString, QString, user_data);
     void click();
+
+    void signal_login(QString, QString);
+    void signal_send_answer_resault(QString, QString);
+
+    void signal_get_user_data(QString);
+    void signal_send_user_data(user_data);
 };
 
 #endif // GUI_LOGIN_AREA_H

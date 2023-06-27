@@ -37,8 +37,21 @@ public slots:
     void call_reg_form();
 
 private slots:
-    void slot_acceppt_data_and_start_new_widget(QString, QString, user_data);
 
+
+signals:
+    void signal_accept_host_data(QString, int);
+    void signal_login(QString, QString);
+    void signal_create_new_user(QString, QString);
+    void signal_create_new_worker(QString);
+    void signal_delete_worker(QString);
+    void signal_get_user_data(QString);
+    void signal_change_user_data(QString, QString, QString, QString);
+    void signal_delete_user(QString, QString);
+
+    void signal_send_answer_resault(QString, QString);
+    void signal_send_user_data(user_data);
+    void signal_soc_connected();
 };
 
 #endif // GUI_CONTROLLER_H

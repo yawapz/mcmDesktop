@@ -3,21 +3,17 @@
 gui_worker_settings::gui_worker_settings(QWidget *parent)
     : QWidget{parent}
 {
-    host = "127.0.0.1";
-    port = 48048;
     this->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     this->setStyleSheet("QWidget {color: white; background-color: #22262b};");
 
     QObject::connect(this, SIGNAL(signal_new_pos(QPoint, QSize)), this, SLOT(slot_accept_new_pos(QPoint, QSize)));
     QObject::connect(this, SIGNAL(signal_inc_data(QString,QString,user_data)),this, SLOT(slot_accept_inc_data(QString,QString,user_data)));
     QObject::connect(this, SIGNAL(signal_data_accepted()),this, SLOT(slot_build_interface()));
-    QObject::connect(this, SIGNAL(signal_host_data(QString,int)), this, SLOT(slot_host_data(QString,int)));
-
+    QObject::connect(this, SIGNAL(signal_send_answer_resault(QString,QString)), this, SLOT(slot_check_result_operation(QString,QString)));
 }
 
 gui_worker_settings::~gui_worker_settings()
 {
-    this->soc->deleteLater();
     emit signal_unlock();
 }
 
@@ -48,6 +44,7 @@ void gui_worker_settings::slot_build_interface()
 {
     delete this->layout();
     widget_list_cleaner();
+
     QVBoxLayout *main_container = new QVBoxLayout();
     unsigned short int count_blocks = 2 + data.getTotal_count_WORKERs();
 
@@ -105,7 +102,7 @@ void gui_worker_settings::slot_build_interface()
             worker_del_btn->setIconSize(QSize(18,18));
             worker_del_btn->setFlat(true);
 
-            QObject::connect(worker_del_btn, SIGNAL(clicked(bool)), this, SLOT(slot_delete_worker()));
+            QObject::connect(worker_del_btn, SIGNAL(clicked(bool)), this, SLOT(slot_delete_worker()), Qt::UniqueConnection);
 
             worker_lay->addWidget(worker_name);
             worker_lay->addWidget(worker_id);
@@ -123,7 +120,7 @@ void gui_worker_settings::slot_build_interface()
     }
     // Кнопка добавления воркера
     QPushButton *add_worker = new QPushButton("Add worker");
-    QObject::connect(add_worker, SIGNAL(clicked(bool)), this, SLOT(slot_add_worker()));
+    QObject::connect(add_worker, SIGNAL(clicked(bool)), this, SLOT(slot_add_worker()), Qt::UniqueConnection);
     add_worker->setFixedHeight(36);
     QPushButton *exit = new QPushButton("Exit");
     QObject::connect(exit, SIGNAL(clicked(bool)), this, SLOT(close()));
@@ -139,118 +136,29 @@ void gui_worker_settings::slot_build_interface()
 void gui_worker_settings::slot_delete_worker()
 {
     this->setEnabled(false);
-    soc = new QTcpSocket();
-    QObject::connect(soc, SIGNAL(readyRead()), this, SLOT(slot_check_result_operation()));
-    this->setEnabled(false);
-    QByteArray *barr = new QByteArray();
-    QDataStream stream(barr, QIODevice::Append);
-    QString command = "del_worker";
-    stream << command;
-    stream << data.RIGS[current_element].ID;
-
-    if(!soc->isOpen())
-        soc->connectToHost(host, port);
-    soc->waitForConnected(1000);
-    soc->write(*barr);
-    soc->flush();
-    delete barr;
-
-    QEventLoop *loop = new QEventLoop;
-    QTimer t;
-    t.connect(&t, &QTimer::timeout, loop, &QEventLoop::quit);
-    t.connect(soc, SIGNAL(readyRead()), loop, SLOT(quit()));
-    t.start(5*1000); // 5 sec
-    loop->exec();
-    loop->deleteLater();
+    emit signal_delete_worker(data.RIGS[current_element].ID);
 }
 
 void gui_worker_settings::slot_add_worker()
 {
-    soc = new QTcpSocket();
-    QObject::connect(soc, SIGNAL(readyRead()), this, SLOT(slot_check_result_operation()));
-    this->setEnabled(false);
-    QByteArray *barr = new QByteArray();
-    QDataStream stream(barr, QIODevice::Append);
-    QString command = "add_worker";
-    stream << command;
-    stream << login;
-
-    if(!soc->isOpen())
-        soc->connectToHost(host, port);
-    soc->waitForConnected(1000);
-    soc->write(*barr);
-    soc->flush();
-    delete barr;
-
-    QEventLoop *loop = new QEventLoop;
-    QTimer t;
-    t.connect(&t, &QTimer::timeout, loop, &QEventLoop::quit);
-    t.connect(soc, SIGNAL(readyRead()), loop, SLOT(quit()));
-    t.start(5*1000); // 5 sec
-    loop->exec();
-    loop->deleteLater();
+    emit signal_create_new_worker(login);
 }
 
-void gui_worker_settings::slot_check_result_operation()
+void gui_worker_settings::slot_check_result_operation(QString req, QString cmd)
 {
-    soc->waitForReadyRead(1000);
-    QString req = "no";
-    QByteArray barr = soc->readAll();
-    QDataStream stream(&barr, QIODevice::ReadOnly);
-    stream >> req;
-
-    soc->waitForDisconnected(1000);
-    soc = new QTcpSocket();
-    QObject::connect(soc, SIGNAL(readyRead()), this, SLOT(slot_accept_json()));
-
-    if(req == "yes")
+    if(cmd == "add_worker" || cmd == "del_worker")
     {
-        QByteArray *barr2 = new QByteArray();
-        QDataStream stream(barr2, QIODevice::Append);
-        QString command = "get_user_data";
-        stream << command;
-        stream << login;
-        if(!soc->isOpen())
-            soc->connectToHost(host, port);
-        soc->waitForConnected(1000);
-        soc->write(*barr2);
-        soc->flush();
-        delete barr2;
-
-        QEventLoop *loop2 = new QEventLoop;
-        QTimer t2;
-        t2.connect(&t2, &QTimer::timeout, loop2, &QEventLoop::quit);
-        t2.connect(soc, SIGNAL(readyRead()), loop2, SLOT(quit()));
-        t2.start(5*1000); // 5 sec
-        loop2->exec();
-        loop2->deleteLater();
+        if(req == "yes")
+        {
+            emit signal_get_user_data(login);
+        }
     }
     this->setEnabled(true);
-}
-
-void gui_worker_settings::slot_accept_json()
-{
-    soc->waitForReadyRead(1000);
-    QByteArray barr = soc->readAll();
-    QDataStream stream(&barr, QIODevice::ReadOnly);
-    QJsonObject jsonObject;
-    stream >> jsonObject;
-    data.main_json_file = jsonObject;
-    data.JSON_server_to_desktop_parcer();
-    soc->waitForDisconnected(1000);
-    slot_build_interface();
-    emit signal_send_data(data);
 }
 
 void gui_worker_settings::slot_accept_new_pos(QPoint new_pos, QSize size)
 {
     this->move(new_pos.x() + (size.width() / 2) - 150, new_pos.y() + 300);
-}
-
-void gui_worker_settings::slot_host_data(QString h, int p)
-{
-    host = h;
-    port = p;
 }
 
 bool gui_worker_settings::eventFilter(QObject *obj, QEvent *event)

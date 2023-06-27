@@ -24,7 +24,7 @@
 #include "qscreen.h"
 #include <QDebug>
 #include "gui_user_settings.h"
-#include "thread_refresh_data.h"
+//#include "thread_refresh_data.h"
 
 class gui_farm_list_area : public QWidget
 {
@@ -33,7 +33,7 @@ public:
     explicit gui_farm_list_area(QWidget *parent = nullptr);
     ~gui_farm_list_area();
 private:
-    thread_refresh_data *refresher;
+    //thread_refresh_data *refresher;
     gui_farm_info_area *farm_info_arr;
     gui_user_settings *user_settings;
     gui_worker_settings *worker_settings;
@@ -73,6 +73,7 @@ private slots:
     void TopMenuEvent(QAction*);
     void slot_disable_interface();
     void slot_active_interface();
+    void slot_emit_data_req();
 
 signals:
     void send_authorization_data(QString, QString, user_data);
@@ -82,9 +83,19 @@ signals:
     void signal_show_worker_settings();
     void signal_ready_update(QString, QString, user_data);
     void signal_send_data_for_workers_settings(QString, QString, user_data);
-    void signal_accept_new_user_data(user_data);
     void signal_new_pos(QPoint, QSize);
     void signal_update_worker(user_data::WORKER);
+//-------------------------------------------------------------------------------
+    void signal_get_user_data(QString);
+
+    void signal_create_new_worker(QString);
+    void signal_delete_worker(QString);
+
+    void signal_change_user_data(QString, QString, QString, QString);
+    void signal_delete_user(QString, QString);
+
+    void signal_send_answer_resault(QString, QString);
+    void signal_send_user_data(user_data);
 
 private:
     unsigned short int grand_panel_base_height;

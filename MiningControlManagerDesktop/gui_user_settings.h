@@ -36,6 +36,9 @@ private:
 
 signals:
     void signal_exit_prog();
+    void signal_change_user_data(QString, QString, QString, QString);
+    void signal_delete_user(QString, QString);
+    void signal_send_answer_resault(QString, QString);
 private slots:
     void slot_accept_server_answer();
     void slot_update_request();

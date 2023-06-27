@@ -24,6 +24,7 @@ SOURCES += \
     mainwindow.cpp \
     thread_farm_info.cpp \
     thread_refresh_data.cpp \
+    thread_socket.cpp \
     user_data.cpp
 
 HEADERS += \
@@ -41,6 +42,7 @@ HEADERS += \
     mainwindow.h \
     thread_farm_info.h \
     thread_refresh_data.h \
+    thread_socket.h \
     user_data.h
 
 # Default rules for deployment.
