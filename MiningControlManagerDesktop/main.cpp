@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
     QObject::connect(CONTROLLER, SIGNAL(signal_get_user_data(QString)), socket, SIGNAL(signal_get_user_data(QString)), Qt::UniqueConnection);
     QObject::connect(CONTROLLER, SIGNAL(signal_change_user_data(QString, QString, QString, QString)), socket, SIGNAL(signal_change_user_data(QString, QString, QString, QString)), Qt::UniqueConnection);
     QObject::connect(CONTROLLER, SIGNAL(signal_delete_user(QString, QString)), socket, SIGNAL(signal_delete_user(QString, QString)), Qt::UniqueConnection);
+    QObject::connect(CONTROLLER, SIGNAL(signal_disconnect()), socket, SIGNAL(signal_disconnect()), Qt::UniqueConnection);
 
     socket->start();
     return a.exec();

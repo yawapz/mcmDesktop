@@ -6,7 +6,7 @@ thread_socket::thread_socket(QObject *parent)
     soc = new QTcpSocket();
     QObject::connect(soc, SIGNAL(readyRead()), this, SLOT(slot_read_answer()), Qt::UniqueConnection);
     QObject::connect(soc, SIGNAL(connected()), this, SIGNAL(signal_soc_connected()), Qt::UniqueConnection);
-
+    QObject::connect(this, SIGNAL(signal_disconnect()), this, SLOT(slot_disconnect()), Qt::UniqueConnection);
     QObject::connect(this, SIGNAL(signal_accept_host_data(QString,int)), this, SLOT(slot_accept_host_data(QString,int)), Qt::UniqueConnection);
     QObject::connect(this, SIGNAL(signal_login(QString,QString)), this, SLOT(slot_login(QString,QString)), Qt::UniqueConnection);
     QObject::connect(this, SIGNAL(signal_create_new_user(QString,QString)), this, SLOT(slot_create_new_user(QString,QString)), Qt::UniqueConnection);
@@ -19,13 +19,12 @@ thread_socket::thread_socket(QObject *parent)
 
 thread_socket::~thread_socket()
 {
-    soc->waitForDisconnected(5000);
+    soc->waitForDisconnected(2000);
     soc->deleteLater();
 }
 
 void thread_socket::run()
 {
-    emit signal_accept_host_data("127.0.0.1", 48048);
     this->exec();
 }
 
@@ -34,7 +33,11 @@ void thread_socket::slot_accept_host_data(QString h, int p)
     host = h;
     port = p;
     soc->connectToHost(h, p);
-    soc->waitForConnected(5000);
+}
+
+void thread_socket::slot_disconnect()
+{
+    soc->disconnectFromHost();
 }
 
 void thread_socket::slot_login(QString l, QString p)

@@ -397,31 +397,6 @@ void gui_farm_list_area::build_interface()
 
 void gui_farm_list_area::slot_accept_new_user_data(user_data new_data)
 {
-//    v_rig_main_panel->deleteLater();
-//    for (auto& iter : v_rig_main_panel_widget_container)
-//        iter->deleteLater();
-//    v_rig_main_panel_widget_container.clear();
-//    delete H_block;
-//    delete v_rig_main_panel_widget;
-//    v_rig_main_panel_widget = new QScrollArea();
-//    v_rig_main_panel_widget->setAlignment(Qt::AlignmentFlag::AlignTop);
-//    //v_rig_main_panel_widget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-//    v_rig_main_panel_widget->setBackgroundRole(QPalette::Light);
-//    v_rig_main_panel_widget->setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
-//    v_rig_main_panel_widget->setStyleSheet("QScrollBar:vertical {background-color: transparent; width: 10px; border-radius: 0px; border: none; margin: 0px 0px 0px 0px;}");
-//    v_rig_main_panel_widget->setStyleSheet("QScrollBar::handle:vertical {background-color: #1d2125; min-height: 30px; border-radius: 5px;}");
-//    delete main_area;
-//    main_area = new QVBoxLayout();
-//    main_area->layout()->setContentsMargins(0,0,0,0);
-//    main_area->layout()->setSpacing(0);
-//    main_area->layout()->setMargin(0);
-//    main_area->setAlignment(Qt::AlignmentFlag::AlignTop);
-//    delete top_button_panel;
-//    delete grand_info_panel;
-//    top_button_panel = new QWidget();
-//    grand_info_panel = new QWidget();
-//    this->build_interface();
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     this->data = new_data;
     H_block_refresh();
     v_rig_refresh();
@@ -472,7 +447,6 @@ void gui_farm_list_area::slot_emit_data_req()
 
 void gui_farm_list_area::H_block_refresh()
 {
-    ////// H_block
     total_rig_panel->setText(QString::number(this->data.getTotal_count_WORKERs()) + "\nWORKERS");
     total_gpu_panel->setText(QString::number(this->data.getTotal_count_GPU()) + "\nGPU");
     QString power_value = "";

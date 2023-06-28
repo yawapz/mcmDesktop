@@ -5,6 +5,7 @@
 #include "logger/thread_logger.h"
 
 #include <QWidget>
+#include <QApplication>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -16,6 +17,9 @@
 #include <QEventLoop>
 #include <QTimer>
 #include <QKeyEvent>
+#include <QFile>
+#include <QScreen>
+#include <QTextStream>
 
 class gui_login_area : public QWidget
 {
@@ -28,11 +32,20 @@ protected:
     void keyReleaseEvent(QKeyEvent* event) override;
 
 private:
+    bool isConnected;
+    QString lastHostConnection;
+    void ReadLastHostConnection();
+    void WriteLastHostConnection();
+    void ReadLastLogin();
+    void WriteLastLogin();
+
     QLabel* resault;
     QLineEdit* login_line;
     QLineEdit* pw_line;
+    QLineEdit* server_line;
     user_data data;
     thread_logger *log;
+    QPushButton *exit;
 
 private slots:
     void authorization();
@@ -41,8 +54,16 @@ private slots:
     void registration();
     void access_checker(QString, QString);
     void accept_json(user_data);
+    void slot_red();
+    void slot_white();
+    void slot_connected();
+    void slot_connector();
+    void slot_checker();
 
 signals:
+    void signal_disconnect();
+    void signal_try_connect(QString, int);
+    void signal_soc_connected();
     void call_farm_list_form();
     void call_reg_form();
     void send_authorization_data_to_another_form(QString, QString, user_data);

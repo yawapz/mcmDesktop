@@ -27,6 +27,7 @@ private:
     void run() override;
 private slots:
     void slot_accept_host_data(QString, int);
+    void slot_disconnect();
     void slot_read_answer();
 
     void slot_login(QString, QString);
@@ -50,6 +51,7 @@ signals:
     void signal_send_answer_resault(QString, QString);
     void signal_send_user_data(user_data);
     void signal_soc_connected();
+    void signal_disconnect();
 };
 
 #endif // THREAD_SOCKET_H

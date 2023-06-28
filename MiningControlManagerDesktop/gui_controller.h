@@ -52,6 +52,7 @@ signals:
     void signal_send_answer_resault(QString, QString);
     void signal_send_user_data(user_data);
     void signal_soc_connected();
+    void signal_disconnect();
 };
 
 #endif // GUI_CONTROLLER_H
