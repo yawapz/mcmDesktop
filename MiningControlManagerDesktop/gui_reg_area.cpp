@@ -7,33 +7,43 @@ gui_reg_area::gui_reg_area(QWidget *parent)
 //-----------------------------------------------------------
     QScreen *screen = QApplication::screens().at(0);
     QSize size = screen->availableSize();
-    this->move(size.width()/2 - 125, size.height()/2 - 110);
+    this->move(size.width()/2, size.height()/2 - 110);
     this->setFocus();
-    this->setFixedSize(220,165);
+    this->setFixedSize(220,220);
+    this->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    this->setStyleSheet("QWidget {color: white; background-color: #22262b};");
 //-----------------------------------------------------------
     // Инициализация
-    this->login = new QLineEdit();
-    this->password = new QLineEdit();
+    int block_height = 30;
 
-    QLabel* login_label = new QLabel("Enter your email address");
-    login_label->setAlignment(Qt::AlignmentFlag::AlignCenter);
+    login = new QLineEdit();
+    login->setFixedHeight(block_height);
+    password = new QLineEdit();
+    password->setFixedHeight(block_height);
 
-    this->login->setDragEnabled(true);
-    this->login->setPlaceholderText("Email");
-    this->login->setAlignment(Qt::AlignmentFlag::AlignCenter);
+    login->setDragEnabled(true);
+    login->setPlaceholderText("Enter Email");
+    login->setStyleSheet("QLineEdit {color: white; padding: 5px; font-size: 16px;};");
 
-    QLabel* pw_label = new QLabel("Enter your new password");
-    pw_label->setAlignment(Qt::AlignmentFlag::AlignCenter);
-
-    this->password->setDragEnabled(false);
-    this->password->setPlaceholderText("Set your new password");
-    this->password->setAlignment(Qt::AlignmentFlag::AlignCenter);
-    this->password->setEchoMode(QLineEdit::Password);
+    password->setDragEnabled(false);
+    password->setPlaceholderText("Enter password");
+    password->setStyleSheet("QLineEdit {color: white; padding: 5px; font-size: 16px;};");
+    password->setEchoMode(QLineEdit::Password);
 
     QVBoxLayout *main_lay = new QVBoxLayout();
     main_lay->setSpacing(5);
-    QPushButton *send = new QPushButton("Send");
+
+    QLabel* text = new QLabel("<H1> Registration </H1>");
+    text->setAlignment(Qt::AlignmentFlag::AlignCenter);
+    text->setContentsMargins(0,0,0,10);
+
+    QPushButton *send = new QPushButton("Join");
+    send->setFixedHeight(block_height);
     QObject::connect(send, SIGNAL(clicked(bool)), this, SLOT(on_click_send_button()));
+
+    QPushButton *back = new QPushButton("Back");
+    back->setFixedHeight(block_height);
+    QObject::connect(back, SIGNAL(clicked(bool)), this, SIGNAL(signal_back()));
 
     QFrame* line = new QFrame();
     line->setFrameShape(QFrame::HLine);
@@ -46,13 +56,13 @@ gui_reg_area::gui_reg_area(QWidget *parent)
     main_lay_top->setAlignment      (Qt::AlignmentFlag::AlignTop);
     main_lay_bottom->setAlignment   (Qt::AlignmentFlag::AlignBottom);
 
-    main_lay_top->addWidget(login_label);
-    main_lay_top->addWidget(this->login);
-    main_lay_top->addWidget(pw_label);
-    main_lay_top->addWidget(this->password);
+    main_lay_top->addWidget(text);
+    main_lay_top->addWidget(login);
+    main_lay_top->addWidget(password);
 
     main_lay_bottom->addWidget(line);
     main_lay_bottom->addWidget(send);
+    main_lay_bottom->addWidget(back);
 
     main_lay->addLayout(main_lay_top);
     main_lay->addLayout(main_lay_bottom);
@@ -63,8 +73,8 @@ gui_reg_area::gui_reg_area(QWidget *parent)
 
 gui_reg_area::~gui_reg_area()
 {
-    this->login->deleteLater();
-    this->password->deleteLater();
+    login->deleteLater();
+    password->deleteLater();
 }
 
 void gui_reg_area::on_click_send_button()
@@ -75,24 +85,22 @@ void gui_reg_area::on_click_send_button()
     }
     else
     {
-        this->setEnabled(false);
-        this->login->clear();
-        this->password->clear();
-        QDialog *win = new QDialog();
-        win->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
-        QScreen *screen = QApplication::screens().at(0);
-        QSize size = screen->availableSize();
-        win->move(size.width()/2 - 125 + 33, size.height()/2 - 110 + 80);
-        QVBoxLayout *lay = new QVBoxLayout();
-        QLabel *label = new QLabel("Please enter Email!");
-        label->setStyleSheet("QLabel {color : red;}");
-        QPushButton *button = new QPushButton("OK");
-        QObject::connect(button, SIGNAL(clicked()), win, SLOT(close()));
-        QObject::connect(button, SIGNAL(clicked()), this, SLOT(unlock_form()));
-        lay->addWidget(label);
-        lay->addWidget(button);
-        win->setLayout(lay);
-        win->show();
+        QTimer *t = new QTimer();
+        t->start(300);
+        QObject::connect(t, SIGNAL(timeout()), this, SLOT(slot_red()));
+
+        QTimer *t2 = new QTimer();
+        t2->start(500);
+        QObject::connect(t2, SIGNAL(timeout()), this, SLOT(slot_white()));
+
+        QTimer *t3 = new QTimer();
+        t3->start(1000);
+        QObject::connect(t3, SIGNAL(timeout()), t, SLOT(stop()));
+        QObject::connect(t3, SIGNAL(timeout()), t2, SLOT(stop()));
+        QObject::connect(t3, SIGNAL(timeout()), t, SLOT(deleteLater()));
+        QObject::connect(t3, SIGNAL(timeout()), t2, SLOT(deleteLater()));
+        QObject::connect(t3, SIGNAL(timeout()), t3, SLOT(deleteLater()));
+        QObject::connect(t3, SIGNAL(timeout()), this, SLOT(slot_white()));
     }
 }
 
@@ -101,14 +109,18 @@ void gui_reg_area::accept_result(QString req , QString cmd)
     if(cmd == "new_user")
     {
         QDialog *win = new QDialog();
-        win->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+        win->setStyleSheet("QWidget {color: white; background-color: #22262b};");
+        win->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
         QScreen *screen = QApplication::screens().at(0);
         QSize size = screen->availableSize();
-        win->move(size.width()/2 - 125 + 60, size.height()/2 - 110 + 80);
+        win->move(size.width()/2, size.height()/2);
         QVBoxLayout *lay = new QVBoxLayout();
         QLabel *label = new QLabel();
+        label->setFixedHeight(30);
         QPushButton *button = new QPushButton("OK");
+        button->setFixedHeight(30);
         QObject::connect(button, SIGNAL(clicked()), win, SLOT(close()));
+        this->hide();
         if(req == "yes")
         {
             QObject::connect(button, SIGNAL(clicked()), this, SLOT(restart_programm()));
@@ -143,4 +155,16 @@ void gui_reg_area::restart_programm()
 void gui_reg_area::unlock_form()
 {
     this->setEnabled(true);
+}
+
+void gui_reg_area::slot_red()
+{
+    login->setStyleSheet("QLineEdit {color: red; padding: 5px; font-size: 16px;};");
+    //password->setStyleSheet("QLineEdit {color: red; padding: 5px; font-size: 16px;};");
+}
+
+void gui_reg_area::slot_white()
+{
+    login->setStyleSheet("QLineEdit {color: white; padding: 5px; font-size: 16px;};");
+    //password->setStyleSheet("QLineEdit {color: white; padding: 5px; font-size: 16px;};");
 }

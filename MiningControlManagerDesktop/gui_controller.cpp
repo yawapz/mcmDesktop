@@ -60,8 +60,16 @@ void gui_controller::call_farm_list_form()
 void gui_controller::call_reg_form()
 {
     reg_area = new gui_reg_area();
+    QObject::connect(reg_area, SIGNAL(signal_back()), this, SLOT(slot_reg_back()));
     QObject::connect(reg_area, SIGNAL(signal_create_new_user(QString,QString)), this, SIGNAL(signal_create_new_user(QString,QString)), Qt::UniqueConnection);
     QObject::connect(this, SIGNAL(signal_send_answer_resault(QString, QString)), reg_area, SIGNAL(signal_send_answer_resault(QString, QString)), Qt::UniqueConnection);
     login_form->hide();
     reg_area->show();
+}
+
+void gui_controller::slot_reg_back()
+{
+    reg_area->close();
+    reg_area->deleteLater();
+    login_form->show();
 }

@@ -37,7 +37,7 @@ public slots:
     void call_reg_form();
 
 private slots:
-
+    void slot_reg_back();
 
 signals:
     void signal_accept_host_data(QString, int);

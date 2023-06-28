@@ -182,7 +182,8 @@ void gui_login_area::gui_transit()
 
 void gui_login_area::registration()
 {
-    emit this->call_reg_form();
+    if(isConnected)
+        emit this->call_reg_form();
 }
 
 void gui_login_area::access_checker(QString req, QString cmd)
