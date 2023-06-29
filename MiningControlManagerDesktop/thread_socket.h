@@ -2,6 +2,7 @@
 #define THREAD_SOCKET_H
 
 #include "user_data.h"
+#include "socket.h"
 
 #include <QThread>
 #include <QObject>
@@ -17,27 +18,7 @@ public:
     ~thread_socket();
 
 private:
-    QString host;
-    int port;
-
-    QTcpSocket *soc;
-    QString command;
-    user_data data;
-
     void run() override;
-private slots:
-    void slot_accept_host_data(QString, int);
-    void slot_disconnect();
-    void slot_read_answer();
-
-    void slot_login(QString, QString);
-    void slot_get_user_data(QString);
-    void slot_create_new_worker(QString);
-    void slot_delete_worker(QString);
-    void slot_create_new_user(QString, QString);
-    void slot_delete_user(QString, QString);
-    void slot_change_user_data(QString, QString, QString, QString);
-
 signals:
     void signal_accept_host_data(QString, int);
     void signal_login(QString, QString);

@@ -159,7 +159,7 @@ void gui_login_area::WriteLastLogin()
 {
     QFile *hist_file = new QFile("res/lastLogin");
     QTextStream *hist_stream = new QTextStream(hist_file);
-    hist_file->open(QFile::ReadWrite);
+    hist_file->open(QFile::WriteOnly);
     *(hist_stream) << login_line->text();
     hist_stream->flush();
     hist_file->deleteLater();
@@ -171,19 +171,19 @@ void gui_login_area::authorization()
     if(isConnected)
     {
         this->setEnabled(false);
-        emit signal_login(this->login_line->text(), this->pw_line->text());
+        emit signal_login(login_line->text(), pw_line->text());
     }
 }
 
 void gui_login_area::gui_transit()
 {
-    emit this->call_farm_list_form();
+    emit call_farm_list_form();
 }
 
 void gui_login_area::registration()
 {
     if(isConnected)
-        emit this->call_reg_form();
+        emit call_reg_form();
 }
 
 void gui_login_area::access_checker(QString req, QString cmd)
@@ -193,7 +193,7 @@ void gui_login_area::access_checker(QString req, QString cmd)
         if(req == "yes")
         {
             WriteLastLogin();
-            emit signal_get_user_data(this->login_line->text());
+            emit signal_get_user_data(login_line->text());
         }
         else
         {

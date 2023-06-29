@@ -22,6 +22,7 @@ SOURCES += \
     logger/thread_logger.cpp \
     main.cpp \
     mainwindow.cpp \
+    socket.cpp \
     thread_farm_info.cpp \
     thread_refresh_data.cpp \
     thread_socket.cpp \
@@ -40,6 +41,7 @@ HEADERS += \
     logger/prog_logger.h \
     logger/thread_logger.h \
     mainwindow.h \
+    socket.h \
     thread_farm_info.h \
     thread_refresh_data.h \
     thread_socket.h \

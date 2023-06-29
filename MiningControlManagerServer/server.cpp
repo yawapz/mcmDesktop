@@ -61,7 +61,6 @@ void server::slot_routing()
         WORKER worker;
         stream >> worker;
         qDebug() << QDate::currentDate().toString() + " accepted data from " + worker.ID;
-        client->disconnect();
 
         QString query_str = "SELECT worker_id FROM \"WORKERS\" WHERE worker_id = \'" + worker.ID + "\';";
         QSqlQuery query(this->DB);

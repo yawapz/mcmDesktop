@@ -5,19 +5,24 @@
 
 #include <QThread>
 #include <QObject>
+#include <QTimer>
 
 class data_builder_th : public QThread
 {
     Q_OBJECT
 public:
-    data_builder_th();
+    explicit data_builder_th(QObject *parent = nullptr);
+    ~data_builder_th();
 
+private:
 
 public slots:
     void run() override;
 
+private slots:
 signals:
     void signal_send_worker_data(WORKER);
+    void signal_get_new_data();
 
 };
 

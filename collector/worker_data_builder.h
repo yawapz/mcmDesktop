@@ -6,8 +6,6 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-#include <thread>
-
 #include "gpu_struct.cpp"
 #include "worker_struct.cpp"
 #include "config.h"
@@ -30,22 +28,22 @@ class worker_data_builder : public QObject
     Q_OBJECT
 public:
     explicit worker_data_builder(QObject *parent = nullptr);
-    void get_new_data();
     ~worker_data_builder();
+public slots:
+
 private:
     WORKER worker;
     miner_json_reader *reader;
     QJsonObject json;
-
-
     void choice_parcer();
-
     void gminer_json_parcer();
 signals:
     void signal_accept_json(QJsonObject);
     void signal_send_worker_data(WORKER);
+    void signal_get_new_data();
 private slots:
     void slot_transfer(QJsonObject);
+    void get_new_data();
 };
 
 #endif // WORKER_DATA_BUILDER_H

@@ -4,7 +4,7 @@
 worker_data_builder::worker_data_builder(QObject *parent)
     : QObject{parent}
 {
-
+    QObject::connect(this, SIGNAL(signal_get_new_data()), this, SLOT(get_new_data()));
 }
 
 void worker_data_builder::get_new_data()
@@ -76,8 +76,6 @@ void worker_data_builder::get_new_data()
 
 
     emit signal_send_worker_data(this->worker);
-    //qDebug() << this->json;
-    //qDebug() << this->worker;
     arr->deleteLater();
 }
 

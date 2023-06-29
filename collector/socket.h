@@ -7,12 +7,17 @@
 #include "config.h"
 #include "config_struct.cpp"
 
+Q_DECLARE_METATYPE(WORKER)
+
 class socket : public QTcpSocket
 {
     Q_OBJECT
 public:
     explicit socket(QObject *parent = nullptr);
-
+private:
+    config lconf;
+    conf_data conf;
+    WORKER worker;
 signals:
     void signal_new_worker_data(WORKER);
 

@@ -1,15 +1,19 @@
-#include "socket_th.h"
+#include "socket_thread.h"
 
-socket_th::socket_th(QObject *parent)
+socket_thread::socket_thread(QObject *parent)
     : QThread{parent}
 {
-
 }
 
-void socket_th::run()
+socket_thread::~socket_thread()
 {
+}
+
+void socket_thread::run()
+{
+
     socket *soc = new socket();
     QObject::connect(this, SIGNAL(signal_send_worker_data(WORKER)), soc, SIGNAL(signal_new_worker_data(WORKER)));
     this->exec();
-    delete soc;
+    soc->deleteLater();
 }

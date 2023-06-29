@@ -27,7 +27,7 @@ SOURCES += \
         requests_info/ram.cpp \
         requests_info/startup_timer.cpp \
         socket.cpp \
-        socket_th.cpp \
+        socket_thread.cpp \
         worker_data_builder.cpp \
         worker_struct.cpp
 
@@ -53,5 +53,5 @@ HEADERS += \
     requests_info/ram.h \
     requests_info/startup_timer.h \
     socket.h \
-    socket_th.h \
+    socket_thread.h \
     worker_data_builder.h
