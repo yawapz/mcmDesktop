@@ -2,6 +2,8 @@
 #define SERVER_H
 
 #include "../collector/worker_struct.cpp"
+#include "dbscriptcleaner_th.h"
+#include "dbscriptinspector_th.h"
 
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -32,6 +34,7 @@ private:
     QElapsedTimer t;
 
 signals:
+    //void signal_send_db(QSqlDatabase);
     //void incoming_new_worker_data(QDataStream&);
 private slots:
     void slot_new_connection();

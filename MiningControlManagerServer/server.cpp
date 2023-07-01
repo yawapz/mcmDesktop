@@ -2,12 +2,12 @@
 
 server::server(int port)
 {
-    this->DB = QSqlDatabase::addDatabase("QPSQL");
-    DB.setHostName("***************************");
-    DB.setDatabaseName("**********************");
+    this->DB = QSqlDatabase::addDatabase("QPSQL",  "main");
+    DB.setHostName("***********************");
+    DB.setDatabaseName("************");
     DB.setPort(5432);
-    DB.setUserName("***********************************");
-    DB.setPassword("*************************************");
+    DB.setUserName("************************");
+    DB.setPassword("****************************************");
 
     if(DB.open())
     {
@@ -29,7 +29,7 @@ server::~server()
 {
     if(!this->connections.empty())
         for(auto& client : this->connections)
-            client->disconnect();
+            client->disconnect();   
 }
 
 void server::slot_new_connection()

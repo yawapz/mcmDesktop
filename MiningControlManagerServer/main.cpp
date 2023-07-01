@@ -9,4 +9,6 @@ int main(int argc, char *argv[])
     server.start();
 
     return a.exec();
+    server.wait();
+    server.quit();
 }
