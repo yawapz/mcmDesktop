@@ -33,7 +33,6 @@ public:
     explicit gui_farm_list_area(QWidget *parent = nullptr);
     ~gui_farm_list_area();
 private:
-    //thread_refresh_data *refresher;
     gui_farm_info_area *farm_info_arr;
     gui_user_settings *user_settings;
     gui_worker_settings *worker_settings;

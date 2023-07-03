@@ -55,6 +55,8 @@ void gui_controller::call_farm_list_form()
 
     QObject::disconnect(this, &gui_controller::send_authorization_data, this->farm_list_form, &gui_farm_list_area::accept_authorization_data);
     QObject::disconnect(this, &gui_controller::send_authorization_data, this->farm_list_form, &gui_farm_list_area::build_interface);
+    //login_form->deleteLater();
+    //reg_area->deleteLater();
 }
 
 void gui_controller::call_reg_form()

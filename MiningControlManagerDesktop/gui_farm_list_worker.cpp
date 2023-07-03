@@ -384,6 +384,7 @@ gui_farm_list_worker::~gui_farm_list_worker()
 
 void gui_farm_list_worker::slot_update_worker(user_data::WORKER inc)
 {
+
     if(inc.ID == this->ID)
     {
         if(this->count_gpu != inc.devices.size())
@@ -581,6 +582,7 @@ void gui_farm_list_worker::slot_update_worker(user_data::WORKER inc)
                     cooler_max_speed = iter.fan_speed;
                 }
             }
+            fan_speed->setText(QString::number(cooler_max_speed) + '%');
             if(rig_power > 0)
             {
                 QString power_value = "";

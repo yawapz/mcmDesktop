@@ -68,6 +68,12 @@ gui_farm_list_area::gui_farm_list_area(QWidget *parent)
 
 gui_farm_list_area::~gui_farm_list_area()
 {
+    for (auto& iter : v_rig_main_panel_widget_container)
+    {
+        iter->deleteLater();
+    }
+    v_rig_main_panel_widget_container.clear();
+
     this->main_area->deleteLater();
     this->top_button_panel->deleteLater();
     this->grand_info_panel->deleteLater();

@@ -14,16 +14,16 @@
 #include <QList>
 #include <QPair>
 #include <QPushButton>
-#include <QVector>
 
-class gui_farm_info_worker : public QScrollArea
+class gui_farm_info_worker : public QWidget
 {
     Q_OBJECT
 protected:
     bool eventFilter(QObject *, QEvent *);
+    void closeEvent(QCloseEvent *);
 
 public:
-    explicit gui_farm_info_worker(user_data::WORKER WORKER);
+    explicit gui_farm_info_worker();
     ~gui_farm_info_worker();
 
     QVBoxLayout *main_lay;
@@ -34,10 +34,9 @@ public:
     QWidget *mid_block;
     QWidget *bottom_block;
 
-    QVector<QWidget*> gpu_widget_container;
-
+    QList<QWidget*> gpu_widget_container;
+    QString id;
 private:
-
     void build_top_small_block(user_data::WORKER &WORKER);
     void build_top_status_block(user_data::WORKER &WORKER);
     void build_top_bottom_info_block(user_data::WORKER &WORKER);
@@ -46,10 +45,13 @@ private:
     void build_bottom_block(user_data::WORKER &WORKER);
 
 signals:
+    void signal_accept_user_data(user_data::WORKER);
     void signal_exit_prog();
+    void signal_close(QString);
 
 private slots:
     void slot_exit_prog();
+    void slot_accept_data(user_data::WORKER);
 };
 
 #endif // GUI_FARM_INFO_WORKER_H

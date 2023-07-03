@@ -1,16 +1,12 @@
 #include "gui_farm_info_worker.h"
+#include "qevent.h"
 
-
-
-gui_farm_info_worker::gui_farm_info_worker(user_data::WORKER WORKER)
+gui_farm_info_worker::gui_farm_info_worker()
 {
+    this->setAttribute(Qt::WA_DeleteOnClose);
     main_lay = new QVBoxLayout();
-    this->build_top_small_block(WORKER);
-    this->build_top_status_block(WORKER);
-    this->build_top_bottom_info_block(WORKER);
-    this->build_card_counting_small_block(WORKER);
-    this->build_mid_block(WORKER);
-    this->build_bottom_block(WORKER);
+    QObject::connect(this, SIGNAL(signal_accept_user_data(user_data::WORKER)),this, SLOT(slot_accept_data(user_data::WORKER)));
+    QObject::connect(this, SIGNAL(signal_exit_prog()), this, SLOT(slot_exit_prog()));
 
     // Параметры отображения виджета
 //-----------------------------------------------------------
@@ -23,45 +19,32 @@ gui_farm_info_worker::gui_farm_info_worker(user_data::WORKER WORKER)
     this->setStyleSheet("background-color: #22262b;");
     this->main_lay->setAlignment(Qt::AlignmentFlag::AlignTop);
 //-----------------------------------------------------------
-    QWidget *top_widget = new QWidget();
-    top_widget->setContentsMargins(0,20,0,0);
-    top_widget->setStyleSheet("background-color: #1d2125;");
 
-    QVBoxLayout *top_lay = new QVBoxLayout();
-    top_lay->setAlignment(Qt::AlignmentFlag::AlignTop);
-    top_lay->setContentsMargins(0,0,0,0);
-    top_lay->setSpacing(0);
-
-    top_lay->addWidget(this->top_small_block);
-    top_lay->addWidget(this->top_status_block);
-    top_lay->addWidget(this->top_bottom_info_block);
-
-    top_widget->setLayout(top_lay);
-//-----------------------------------------------------------
-    this->main_lay->addWidget(top_widget);
-    this->main_lay->addWidget(this->card_counting_small_block);
-    this->main_lay->addWidget(this->mid_block);
-    if(WORKER.status)
-        this->main_lay->addWidget(this->bottom_block, Qt::AlignmentFlag::AlignBottom);
-
-    this->setLayout(main_lay);
-    QObject::connect(this, SIGNAL(signal_exit_prog()), this, SLOT(slot_exit_prog()));
 }
 
 gui_farm_info_worker::~gui_farm_info_worker()
 {
-    main_lay->deleteLater();
-    top_small_block->deleteLater();
-    top_status_block->deleteLater();
-    top_bottom_info_block->deleteLater();
-    card_counting_small_block->deleteLater();
-    mid_block->deleteLater();
-    bottom_block->deleteLater();
     for (auto& iter : gpu_widget_container)
     {
-        iter->deleteLater();
+        delete iter;
     }
     gpu_widget_container.clear();
+
+//    main_lay->deleteLater();
+//    top_small_block->deleteLater();
+//    top_status_block->deleteLater();
+//    top_bottom_info_block->deleteLater();
+//    card_counting_small_block->deleteLater();
+//    mid_block->deleteLater();
+//    bottom_block->deleteLater();
+
+    delete main_lay;
+    delete top_small_block;
+    delete top_status_block;
+    delete top_bottom_info_block;
+    delete card_counting_small_block;
+    delete mid_block;
+    delete bottom_block;
 }
 
 void gui_farm_info_worker::build_top_small_block(user_data::WORKER &WORKER)
@@ -1515,6 +1498,40 @@ void gui_farm_info_worker::slot_exit_prog()
     QApplication::quit();
 }
 
+void gui_farm_info_worker::slot_accept_data(user_data::WORKER WORKER)
+{
+    id = WORKER.ID;
+    this->build_top_small_block(WORKER);
+    this->build_top_status_block(WORKER);
+    this->build_top_bottom_info_block(WORKER);
+    this->build_card_counting_small_block(WORKER);
+    this->build_mid_block(WORKER);
+    this->build_bottom_block(WORKER);
+
+    QWidget *top_widget = new QWidget();
+    top_widget->setContentsMargins(0,20,0,0);
+    top_widget->setStyleSheet("background-color: #1d2125;");
+
+    QVBoxLayout *top_lay = new QVBoxLayout();
+    top_lay->setAlignment(Qt::AlignmentFlag::AlignTop);
+    top_lay->setContentsMargins(0,0,0,0);
+    top_lay->setSpacing(0);
+
+    top_lay->addWidget(this->top_small_block);
+    top_lay->addWidget(this->top_status_block);
+    top_lay->addWidget(this->top_bottom_info_block);
+
+    top_widget->setLayout(top_lay);
+//-----------------------------------------------------------
+    this->main_lay->addWidget(top_widget);
+    this->main_lay->addWidget(this->card_counting_small_block);
+    this->main_lay->addWidget(this->mid_block);
+    if(WORKER.status)
+        this->main_lay->addWidget(this->bottom_block, Qt::AlignmentFlag::AlignBottom);
+
+    this->setLayout(main_lay);
+}
+
 bool gui_farm_info_worker::eventFilter(QObject *obj, QEvent *event)
 {
     for (int i = 0; i < this->gpu_widget_container.size(); ++i)
@@ -1537,4 +1554,10 @@ bool gui_farm_info_worker::eventFilter(QObject *obj, QEvent *event)
         }
     }
     return QWidget::eventFilter(obj, event);
+}
+
+void gui_farm_info_worker::closeEvent(QCloseEvent *event)
+{
+    emit signal_close(id);
+    event->accept();
 }

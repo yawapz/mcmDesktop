@@ -3,6 +3,7 @@
 socket::socket(QObject *parent)
     : QTcpSocket{parent}
 {
+    timer.setInterval(5*1000); // 5 sec
     qRegisterMetaType<user_data>();
     QObject::connect(this, SIGNAL(readyRead()), this, SLOT(slot_read_answer()), Qt::UniqueConnection);
     QObject::connect(this, SIGNAL(signal_disconnect()), this, SLOT(slot_disconnect()), Qt::UniqueConnection);
@@ -14,6 +15,8 @@ socket::socket(QObject *parent)
     QObject::connect(this, SIGNAL(signal_get_user_data(QString)), this, SLOT(slot_get_user_data(QString)), Qt::UniqueConnection);
     QObject::connect(this, SIGNAL(signal_change_user_data(QString, QString, QString, QString)), this, SLOT(slot_change_user_data(QString, QString, QString, QString)), Qt::UniqueConnection);
     QObject::connect(this, SIGNAL(signal_delete_user(QString, QString)), this, SLOT(slot_delete_user(QString, QString)), Qt::UniqueConnection);
+    QObject::connect(&timer, SIGNAL(timeout()), this, SLOT(slot_check_connection()), Qt::UniqueConnection);
+    QObject::connect(this, SIGNAL(connected()), &timer, SLOT(start()));
 }
 
 socket::~socket()
@@ -131,12 +134,22 @@ void socket::slot_change_user_data(QString l, QString p, QString nl, QString np)
     delete barr;
 }
 
+void socket::slot_check_connection()
+{
+    if(this->state() != QAbstractSocket::ConnectedState)
+        this->connectToHost(host, port);
+}
+
 void socket::slot_read_answer()
 {
-    if(command == "get_user_data")
+    QByteArray barr = this->readAll();
+    QDataStream stream(&barr, QIODevice::ReadOnly);
+    QString req = "no";
+    QString cmd = "";
+    stream >> cmd;
+
+    if(cmd == "get_user_data")
     {
-        QByteArray barr = this->readAll();
-        QDataStream stream(&barr, QIODevice::ReadOnly);
         QJsonObject jsonObject;
         stream >> jsonObject;
         data.main_json_file = jsonObject;
@@ -145,12 +158,17 @@ void socket::slot_read_answer()
     }
     else
     {
-        QString req = "no";
-        QString cmd = "";
-        QByteArray barr = this->readAll();
-        QDataStream stream(&barr, QIODevice::ReadOnly);
         stream >> req;
-        stream >> cmd;
-        emit signal_send_answer_resault(req, cmd);
+        if(cmd == "ping")
+        {
+            QByteArray *barr = new QByteArray();
+            QDataStream stream(barr, QIODevice::Append);
+            stream << "pong";
+            this->write(*barr);
+            this->flush();
+            delete barr;
+        }
+        else
+            emit signal_send_answer_resault(req, cmd);
     }
 }

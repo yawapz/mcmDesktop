@@ -12,11 +12,11 @@ DbScriptCleaner::DbScriptCleaner(QObject *parent)
 
     if(DB.open())
     {
-        qDebug() << "The cleaner has been connected!" << Qt::endl;
+        qDebug() << "\033[32m" << "The cleaner has been connected!" << Qt::endl;
     }
     else
     {
-        qDebug() << "The cleaner was not connected!" << Qt::endl;
+        qDebug() << "\033[31m" << "The cleaner was not connected!" << Qt::endl;
     }
     inProcess = false;
     QObject::connect(this, SIGNAL(signal_go()), this, SLOT(slot_go()));
@@ -40,6 +40,7 @@ void DbScriptCleaner::slot_go()
         {
             qDebug() << "Error Query - " << query_workers.lastError().type() << " - " << query_workers.lastError().text();
             qDebug() << query_workers.lastQuery();
+            qDebug() << "\033[31m" << "db_cleaner finished with errors" << t.elapsed() << " msec";
         }
         else
         {
@@ -65,8 +66,9 @@ void DbScriptCleaner::slot_go()
                     }
                 }
             }
+            qDebug() << "\033[32m" << "db_cleaner finished " << t.elapsed() << " msec";
         }
         inProcess = false;
     }
-    qDebug() << "db_cleaner finished " << t.elapsed() << " msec";
+
 }

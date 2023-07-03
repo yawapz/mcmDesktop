@@ -12,11 +12,11 @@ DbScriptInspector::DbScriptInspector(QObject *parent)
 
     if(DB.open())
     {
-        qDebug() << "The inspector has been connected!" << Qt::endl;
+        qDebug() << "\033[32m" << "The inspector has been connected!" << Qt::endl;
     }
     else
     {
-        qDebug() << "The inspector was not connected!" << Qt::endl;
+        qDebug() << "\033[31m" << "The inspector was not connected!" << Qt::endl;
     }
     inProcess = false;
     QObject::connect(this, SIGNAL(signal_go()), this, SLOT(slot_go()));
@@ -41,6 +41,7 @@ void DbScriptInspector::slot_go()
         {
             qDebug() << "Error Query - " << query_workers.lastError().type() << " - " << query_workers.lastError().text();
             qDebug() << query_workers.lastQuery();
+            qDebug() << "\033[31m" << "db_inspector finished with errors" << t.elapsed() << " msec";
         }
         else
         {
@@ -77,8 +78,8 @@ void DbScriptInspector::slot_go()
                     }
                 }
             }
+            qDebug() << "\033[32m" << "db_inspector finished " << t.elapsed() << " msec";
         }
         inProcess = false;
     }
-    qDebug() << "db_inspector finished " << t.elapsed() << " msec";
 }

@@ -5,6 +5,7 @@
 #include <QTcpSocket>
 #include <QDataStream>
 #include <QObject>
+#include <QTimer>
 
 Q_DECLARE_METATYPE(user_data)
 
@@ -20,6 +21,7 @@ private:
 
     QString command;
     user_data data;
+    QTimer timer;
 
 private slots:
     void slot_accept_host_data(QString, int);
@@ -33,7 +35,7 @@ private slots:
     void slot_create_new_user(QString, QString);
     void slot_delete_user(QString, QString);
     void slot_change_user_data(QString, QString, QString, QString);
-
+    void slot_check_connection();
 signals:
     void signal_accept_host_data(QString, int);
     void signal_login(QString, QString);

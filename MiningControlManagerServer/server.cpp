@@ -11,11 +11,11 @@ server::server(int port)
 
     if(DB.open())
     {
-        qDebug() << "DB connected!" << Qt::endl;
+        qDebug() << "\033[32m" << "The db has been connected!" << Qt::endl;
     }
     else
     {
-        qDebug() << "DB not connected!" << Qt::endl;
+        qDebug() <<"\033[31m" << "The db was not connected!" << Qt::endl;
     }
 
     //this->listen(QHostAddress::AnyIPv4, port);
@@ -232,6 +232,7 @@ void server::slot_routing()
                     if(worker_query.size() == 0)
                     {
                         worker.ID = worker_id_list[i];
+                        worker.name = "<unknown>";
                         worker_list.push_back(worker);
                     }
                     else
@@ -245,9 +246,23 @@ void server::slot_routing()
                         worker.startup = worker_query.value(worker_record.indexOf("startup")).toLongLong();
                         worker.str_json = worker_query.value(worker_record.indexOf("json")).toString();
                         worker.worker_json = QJsonDocument::fromJson(worker.str_json.toUtf8()).object();
+
+                        if(!worker.status)
+                        {
+                            // Вкрутить параметры воркера (status, last_online)
+                                // в Qt 5 нет нормальной замены значения
+                            QJsonObject obj = worker.worker_json;
+                            auto iterator = obj.find("status");
+                            obj.erase(iterator);
+                            obj.insert("status", false);
+                            auto iterator2 = obj.find("last_online");
+                            obj.erase(iterator2);
+                            obj.insert("last_online", worker.last_online);
+
+                            worker.worker_json = obj;
+                        }
                         worker_list.push_back(worker);
                     }
-
                 }
             }
             // Собрать данные всех воркеров юзера в JSON
@@ -310,9 +325,8 @@ void server::slot_routing()
             }
             final_JSON_object.insert("rigs", arr);
             // Отправить данные клиенту
-
-            req_stream << final_JSON_object;
             req_stream << command;
+            req_stream << final_JSON_object;
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -337,9 +351,10 @@ void server::slot_routing()
         }
         else
         {
+            req_stream << command;
             if(query.size() > 0)
             {
-                qDebug() << "successful authentication user " + user_login ;
+                qDebug() << "\033[37m" << "successful authentication user " + user_login ;
                 // ответ об успешной аунтификации
                 req_stream << QString("yes");
             }
@@ -349,10 +364,9 @@ void server::slot_routing()
                 req_stream << QString("no");
 
             }
-            req_stream << command;
+
             client->write(barr);
             client->waitForConnected(1000);
-
         }
     }
     else if(command == "new_user")
@@ -376,6 +390,7 @@ void server::slot_routing()
         {
             if(query.size() == 0)
             {
+                req_stream << command;
                 QString query_str2 = "INSERT INTO \"USERS\" (login, password) VALUES (\'" + user_login + "\', \'"
                 "" + user_password + "\');";
                 if(!query.exec(query_str2))
@@ -390,15 +405,14 @@ void server::slot_routing()
                     // Отправить ответ об успешном добавлении в БД
                     req_stream << QString("yes");
                 }
-                req_stream << command;
                 client->write(barr);
                 client->waitForConnected(1000);
             }
             else
             {
                 // Отправить ответ, что такой логин уже есть
-                req_stream << QString("busy");
                 req_stream << command;
+                req_stream << QString("busy");
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -452,8 +466,8 @@ void server::slot_routing()
                         qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
                         qDebug() << query.lastQuery();
                         // ответ об отказе добавлении
-                        req_stream << QString("no");
                         req_stream << command;
+                        req_stream << QString("no");
                         client->write(barr);
                         client->waitForConnected(1000);
                         break;
@@ -532,8 +546,8 @@ void server::slot_routing()
                             qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
                             qDebug() << query.lastQuery();
                             // ответ об отказе добавлении
-                            req_stream << QString("no");
                             req_stream << command;
+                            req_stream << QString("no");
                             client->write(barr);
                             client->waitForConnected(1000);
                             break;
@@ -542,8 +556,8 @@ void server::slot_routing()
                         {
                             qDebug() << "new worker " + new_worker_id;
                             // ответ об успешном добавлении
-                            req_stream << QString("yes");
                             req_stream << command;
+                            req_stream << QString("yes");
                             client->write(barr);
                             client->waitForConnected(1000);
                             break;
@@ -559,8 +573,8 @@ void server::slot_routing()
         if(!res)
         {
             // ответ об отказе добавлении
-            req_stream << QString("no");
             req_stream << command;
+            req_stream << QString("no");
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -581,8 +595,8 @@ void server::slot_routing()
             qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
             qDebug() << query.lastQuery();
             // Отказ
-            req_stream << QString("no");
             req_stream << command;
+            req_stream << QString("no");
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -595,8 +609,8 @@ void server::slot_routing()
                 qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
                 qDebug() << query.lastQuery();
                 // Отказ
-                req_stream << QString("no");
                 req_stream << command;
+                req_stream << QString("no");
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -604,8 +618,8 @@ void server::slot_routing()
             {
                 qDebug() << "Worker " + worker_id + " deleted!";
                 // Отправка положительного результата
-                req_stream << QString("yes");
                 req_stream << command;
+                req_stream << QString("yes");
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -628,15 +642,15 @@ void server::slot_routing()
             qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
             qDebug() << query.lastQuery();
             // Ответ отказ
-            req_stream << QString("no");
             req_stream << command;
+            req_stream << QString("no");
             client->write(barr);
             client->waitForConnected(1000);
         }
         else if(query.size() == 0)
         {
-            req_stream << QString("no");
             req_stream << command;
+            req_stream << QString("no");
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -649,8 +663,8 @@ void server::slot_routing()
                 qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
                 qDebug() << query.lastQuery();
                 // Ответ отказ
-                req_stream << QString("no");
                 req_stream << command;
+                req_stream << QString("no");
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -706,8 +720,8 @@ void server::slot_routing()
                             else
                             {
                                 qDebug() << "The user " + user_login + " has been deleted!";
-                                req_stream << QString("yes");
                                 req_stream << command;
+                                req_stream << QString("yes");
                                 client->write(barr);
                                 client->waitForConnected(1000);
                             }
@@ -715,8 +729,8 @@ void server::slot_routing()
                     }
                     else
                     {
-                        req_stream << QString("no");
                         req_stream << command;
+                        req_stream << QString("no");
                         client->write(barr);
                         client->waitForConnected(1000);
                     }
@@ -733,8 +747,8 @@ void server::slot_routing()
                     else
                     {
                         qDebug() << "The user " + user_login + " has been deleted!";
-                        req_stream << QString("yes");
                         req_stream << command;
+                        req_stream << QString("yes");
                         client->write(barr);
                         client->waitForConnected(1000);
                     }
@@ -764,8 +778,8 @@ void server::slot_routing()
             qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
             qDebug() << query.lastQuery();
             // ответ об отменённой операции
-            req_stream << QString("no");
             req_stream << command;
+            req_stream << QString("no");
             client->write(barr);
             client->waitForConnected(1000);
         }
@@ -781,8 +795,8 @@ void server::slot_routing()
                     qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
                     qDebug() << query.lastQuery();
                     // ответ об отменённой операции
-                    req_stream << QString("no");
                     req_stream << command;
+                    req_stream << QString("no");
                     client->write(barr);
                     client->waitForConnected(1000);
                 }
@@ -797,8 +811,8 @@ void server::slot_routing()
                         qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
                         qDebug() << query.lastQuery();
                         // ответ об отменённой операции
-                        req_stream << QString("no");
                         req_stream << command;
+                        req_stream << QString("no");
                         client->write(barr);
                         client->waitForConnected(1000);
                     }
@@ -814,8 +828,8 @@ void server::slot_routing()
                                 qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
                                 qDebug() << query.lastQuery();
                                 // ответ об отменённой операции
-                                req_stream << QString("no");
                                 req_stream << command;
+                                req_stream << QString("no");
                                 client->write(barr);
                                 client->waitForConnected(1000);
                             }
@@ -823,8 +837,8 @@ void server::slot_routing()
                             {
                                 qDebug() << "successful update data for user " + new_login ;
                                 // ответ об успешной операции
-                                req_stream << QString("yes");
                                 req_stream << command;
+                                req_stream << QString("yes");
                                 client->write(barr);
                                 client->waitForConnected(1000);
                             }
@@ -833,8 +847,8 @@ void server::slot_routing()
                         {
                             qDebug() << "successful update data for user " + new_login ;
                             // ответ об успешной операции
-                            req_stream << QString("yes");
                             req_stream << command;
+                            req_stream << QString("yes");
                             client->write(barr);
                             client->waitForConnected(1000);
                         }
@@ -844,8 +858,8 @@ void server::slot_routing()
             else
             {
                 // ответ об отменённой операции
-                req_stream << QString("no");
                 req_stream << command;
+                req_stream << QString("no");
                 client->write(barr);
                 client->waitForConnected(1000);
             }
@@ -853,6 +867,6 @@ void server::slot_routing()
     }
 
 
-    qDebug() << command << t.elapsed() << " msec " << client->peerAddress().toString()
+    qDebug() << "\033[37m" << command << t.elapsed() << " msec " << client->peerAddress().toString()
                 + ":" + QString::number(client->peerPort());
 }

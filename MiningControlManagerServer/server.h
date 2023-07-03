@@ -34,8 +34,7 @@ private:
     QElapsedTimer t;
 
 signals:
-    //void signal_send_db(QSqlDatabase);
-    //void incoming_new_worker_data(QDataStream&);
+
 private slots:
     void slot_new_connection();
     void slot_disconnected();
