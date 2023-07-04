@@ -1,12 +1,20 @@
 #include "nvidia.h"
+#include "qdebug.h"
 
 nvidia::nvidia()
 {
-    this->request = "nvidia-smi | grep Version | gawk '{print $6}'";
-    std::string version = this->linux_terminal(this->request).toStdString();
-    version.erase(version.find('\n'));
+    try
+    {
+        this->request = "nvidia-smi | grep Version | gawk '{print $6}'";
+        std::string version = this->linux_terminal(this->request).toStdString();
+        version.erase(version.find('\n'));
 
-    this->info = QString::fromStdString(version);
+        this->info = QString::fromStdString(version);
+    }
+    catch (std::exception ex)
+    {
+        qDebug() << "nvidia module - " << ex.what();
+    }
 }
 
 QString nvidia::get_version_info()

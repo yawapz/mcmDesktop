@@ -1,20 +1,28 @@
 #include "cpu.h"
+#include "qdebug.h"
 
 cpu::cpu()
 {
-    this->request1 = "cat /proc/cpuinfo | grep 'model name' | uniq";
+    try
+    {
 
-    std::string result_cpu = this->linux_terminal(this->request1).toStdString();
-    result_cpu.erase(0, result_cpu.find(':') + 2);
-    result_cpu.erase(result_cpu.find('\n'));
+        this->request1 = "cat /proc/cpuinfo | grep 'model name' | uniq";
 
-    this->name = QString::fromStdString(result_cpu);
+        std::string result_cpu = this->linux_terminal(this->request1).toStdString();
+        result_cpu.erase(0, result_cpu.find(':') + 2);
+        result_cpu.erase(result_cpu.find('\n'));
 
-    this->request2 = "cat /sys/class/thermal/thermal_zone*/temp";
-    std::string result_cpu_temperature = this->linux_terminal(this->request2).toStdString();
-    result_cpu_temperature.erase(result_cpu_temperature.find('\n'));
+        this->name = QString::fromStdString(result_cpu);
 
-    this->temperature = QString::number(QString::fromStdString(result_cpu_temperature).toInt() / 1000) + "°";
+        this->request2 = "cat /sys/class/thermal/thermal_zone*/temp";
+        std::string result_cpu_temperature = this->linux_terminal(this->request2).toStdString();
+        result_cpu_temperature.erase(result_cpu_temperature.find('\n'));
+
+        this->temperature = QString::number(QString::fromStdString(result_cpu_temperature).toInt() / 1000) + "°";
+    } catch (std::exception ex)
+    {
+        qDebug() << "cpu module - " << ex.what();
+    }
 }
 
 QString cpu::get_info()

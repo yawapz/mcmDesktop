@@ -3,43 +3,49 @@
 
 disk::disk()
 {
-    this->request1 = "inxi -Dxx | grep ID-1";
-    std::string disk_name = this->linux_terminal(this->request1).toStdString();
-    while (disk_name.find("\u0003") != -1)
+    try
     {
-        disk_name.erase(disk_name.find("\u0003"), 1);
+        this->request1 = "inxi -Dxx | grep ID-1";
+        std::string disk_name = this->linux_terminal(this->request1).toStdString();
+        while (disk_name.find("\u0003") != -1)
+        {
+            disk_name.erase(disk_name.find("\u0003"), 1);
+        }
+
+        int pos1 = disk_name.find("12vendor") + 9;
+        disk_name.erase(0, pos1);
+
+        int pos2 = disk_name.find("12model");
+        disk_name.erase(pos2, pos2 + 8);
+
+        int pos3 = disk_name.find("12size") - 1;
+        disk_name.erase(pos3);
+
+        this->disk_name = QString::fromStdString(disk_name);
+
+        this->request2 = "df / -m | grep dev | gawk '{print $3}'";
+        QString str_disk_used = this->linux_terminal(this->request2);
+        if(str_disk_used.toInt() < 1024)
+            this->disk_used = str_disk_used + " MiB";
+        else
+            this->disk_used = QString::number((str_disk_used.toDouble() / 1024), 'f', 2) + " GiB";
+
+        this->request3 = "df / -m | grep dev | gawk '{print $4}'";
+        QString str_disk_free = this->linux_terminal(this->request3);
+        if(str_disk_free.toInt() < 1024)
+            this->disk_free = QString::number(str_disk_free.toInt()) + " MiB";
+        else
+            this->disk_free = QString::number((str_disk_free.toInt() / 1024), 'f', 2) + " GiB";
+
+        double total_space = str_disk_used.toInt() + str_disk_free.toInt();
+        if(total_space < 1024)
+            this->disk_total = QString::number(total_space, 'f', 2) + " MiB";
+        else
+            this->disk_total = QString::number((total_space / 1024), 'f', 2) + " GiB";
+    } catch (std::exception ex)
+    {
+        qDebug() << "disk module - " << ex.what();
     }
-
-    int pos1 = disk_name.find("12vendor") + 9;
-    disk_name.erase(0, pos1);
-
-    int pos2 = disk_name.find("12model");
-    disk_name.erase(pos2, pos2 + 8);
-
-    int pos3 = disk_name.find("12size") - 1;
-    disk_name.erase(pos3);
-
-    this->disk_name = QString::fromStdString(disk_name);
-
-    this->request2 = "df / -m | grep dev | gawk '{print $3}'";
-    QString str_disk_used = this->linux_terminal(this->request2);
-    if(str_disk_used.toInt() < 1024)
-        this->disk_used = str_disk_used + " MiB";
-    else
-        this->disk_used = QString::number((str_disk_used.toDouble() / 1024), 'f', 2) + " GiB";
-
-    this->request3 = "df / -m | grep dev | gawk '{print $4}'";
-    QString str_disk_free = this->linux_terminal(this->request3);
-    if(str_disk_free.toInt() < 1024)
-        this->disk_free = QString::number(str_disk_free.toInt()) + " MiB";
-    else
-        this->disk_free = QString::number((str_disk_free.toInt() / 1024), 'f', 2) + " GiB";
-
-    double total_space = str_disk_used.toInt() + str_disk_free.toInt();
-    if(total_space < 1024)
-        this->disk_total = QString::number(total_space, 'f', 2) + " MiB";
-    else
-        this->disk_total = QString::number((total_space / 1024), 'f', 2) + " GiB";
 }
 
 QString disk::get_disk_name()
