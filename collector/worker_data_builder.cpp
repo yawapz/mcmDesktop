@@ -9,6 +9,7 @@ worker_data_builder::worker_data_builder(QObject *parent)
 
 void worker_data_builder::get_new_data()
 {
+    isIncMinerData = false;
     this->reader = new miner_json_reader();
 
     motherboard motherboard;
@@ -74,7 +75,7 @@ void worker_data_builder::get_new_data()
     this->worker.last_online = 0;
 
 
-
+    dataControl();
     emit signal_send_worker_data(this->worker);
     arr->deleteLater();
 }
@@ -100,6 +101,7 @@ void worker_data_builder::choice_parcer()
 
 void worker_data_builder::gminer_json_parcer()
 {
+    isIncMinerData = true;
     QString all_algos = this->json.take("algorithm").toString();
     if(all_algos.contains('+'))
     {
@@ -141,6 +143,28 @@ void worker_data_builder::gminer_json_parcer()
     this->worker.total_stale_shares2 = this->json.take("total_stale_shares2").toInt();
     this->worker.total_invalid_shares = this->json.take("total_invalid_shares").toInt();
     this->worker.total_invalid_shares2 = this->json.take("total_invalid_shares2").toInt();
+}
+
+void worker_data_builder::dataControl()
+{
+    // Контроль данных из майнера
+    if(!isIncMinerData)
+    {
+        this->worker.miner = "";
+        this->worker.server = "";
+        this->worker.server2 = "";
+        this->worker.user = "";
+        this->worker.user2 = "";
+        this->worker.uptime = 0;
+        this->worker.total_accepted_shares = 0;
+        this->worker.total_accepted_shares2 = 0;
+        this->worker.total_rejected_shares = 0;
+        this->worker.total_rejected_shares2 = 0;
+        this->worker.total_stale_shares = 0;
+        this->worker.total_stale_shares2 = 0;
+        this->worker.total_invalid_shares = 0;
+        this->worker.total_invalid_shares2 = 0;
+    }
 }
 
 void worker_data_builder::slot_transfer(QJsonObject new_json)

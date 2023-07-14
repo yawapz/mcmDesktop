@@ -37,6 +37,9 @@ private:
     QJsonObject json;
     void choice_parcer();
     void gminer_json_parcer();
+
+    bool isIncMinerData;
+    void dataControl();
 signals:
     void signal_accept_json(QJsonObject);
     void signal_send_worker_data(WORKER);
