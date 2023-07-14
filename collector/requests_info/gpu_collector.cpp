@@ -83,7 +83,7 @@ void gpu_collector::get_bus_id()
 
 void gpu_collector::get_vendor()
 {
-    QString req = "lspci -v -m | grep VGA -A 7 | grep SVendor";
+    QString req = "lspci -v -m | grep VGA -A 7 | grep SVendor | gawk '{print $2}'";
     QString vendor = this->linux_terminal(req);
 
     QString temp = "";
@@ -94,7 +94,6 @@ void gpu_collector::get_vendor()
             temp += vendor[i];
         else
         {
-            temp.remove(0,9);
             this->gpu_list[index].vendor = temp;
             temp.clear();
             ++index;

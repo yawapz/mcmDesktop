@@ -5,7 +5,6 @@ cpu::cpu()
 {
     try
     {
-
         this->request1 = "cat /proc/cpuinfo | grep 'model name' | uniq";
 
         std::string result_cpu = this->linux_terminal(this->request1).toStdString();
@@ -18,7 +17,7 @@ cpu::cpu()
         std::string result_cpu_temperature = this->linux_terminal(this->request2).toStdString();
         result_cpu_temperature.erase(result_cpu_temperature.find('\n'));
 
-        this->temperature = QString::number(QString::fromStdString(result_cpu_temperature).toInt() / 1000) + "°";
+        this->temperature = QString::number(QString::fromStdString(result_cpu_temperature).toInt() / 1000);
     } catch (std::exception ex)
     {
         qDebug() << "cpu module - " << ex.what();
