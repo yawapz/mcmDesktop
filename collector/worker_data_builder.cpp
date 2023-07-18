@@ -35,7 +35,7 @@ void worker_data_builder::get_new_data()
     t.connect(arr, SIGNAL(signal_json_delivered(QJsonObject)), loop, SLOT(quit()));
     t.start(3000);
     loop->exec();
-    loop->deleteLater();
+    delete loop;
 
     // system data
     this->worker.motherboard_data = motherboard.get_info();
@@ -77,7 +77,8 @@ void worker_data_builder::get_new_data()
 
     dataControl();
     emit signal_send_worker_data(this->worker);
-    arr->deleteLater();
+    delete arr;
+    delete reader;
 }
 
 worker_data_builder::~worker_data_builder()
