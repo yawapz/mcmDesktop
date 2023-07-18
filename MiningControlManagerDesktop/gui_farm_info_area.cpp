@@ -18,6 +18,7 @@ void gui_farm_info_area::accept_user_data(QString login, QString password, user_
     this->login = login;
     this->password = password;
     this->data = new_data;
+    dataSender();
 }
 
 void gui_farm_info_area::find_widget(QString ID)
@@ -27,10 +28,11 @@ void gui_farm_info_area::find_widget(QString ID)
         if(WORKER.ID == ID)
         {
             bool isF = false;
-            for (auto& iter : showArr)
+            for (int i = 0; i < idArr.size();  ++i)
             {
-                if(iter.first == ID)
+                if(idArr[i] == ID)
                 {
+                   widgetArr[i]->show();
                    isF = true;
                    break;
                 }
@@ -38,13 +40,14 @@ void gui_farm_info_area::find_widget(QString ID)
             if(!isF)
             {
                 gui_farm_info_worker *RIG = new gui_farm_info_worker();
-                QObject::connect(this, SIGNAL(signal_send_user_data(user_data::WORKER)), RIG, SIGNAL(signal_accept_user_data(user_data::WORKER)));
+                QObject::connect(this, SIGNAL(signal_send_user_data(user_data::WORKER)), RIG, SIGNAL(signal_accept_user_data(user_data::WORKER)), Qt::UniqueConnection);
                 QObject::connect(this, SIGNAL(signal_exit_prog()), RIG, SIGNAL(signal_exit_prog()));
-                QObject::connect(RIG, SIGNAL(signal_close(QString)), this, SLOT(close_widget(QString)));
+                QObject::connect(RIG, SIGNAL(signal_close(QString)), this, SLOT(close_widget(QString)), Qt::UniqueConnection);
                 emit signal_send_user_data(WORKER);
-                RIG->show();
                 QObject::disconnect(this, SIGNAL(signal_send_user_data(user_data::WORKER)), RIG, SIGNAL(signal_accept_user_data(user_data::WORKER)));
-                showArr.push_back(QPair(ID, RIG));
+                widgetArr.push_back(RIG);
+                idArr.push_back(ID);
+                RIG->show();
             }
         }
     }
@@ -52,12 +55,27 @@ void gui_farm_info_area::find_widget(QString ID)
 
 void gui_farm_info_area::close_widget(QString id)
 {
-    for (int i = 0; i < showArr.size(); ++i)
+    for (int i = 0; i < idArr.size(); ++i)
     {
-        if(showArr[i].first == id)
+        if(idArr[i] == id)
         {
-            showArr.removeAt(i);
+            widgetArr.removeAt(i);
+            idArr.removeAt(i);
             break;
+        }
+    }
+}
+
+void gui_farm_info_area::dataSender()
+{
+    for (auto& WORKER : this->data.getRIGS())
+    {
+        for (auto& iter : widgetArr)
+        {
+            if(iter->id == WORKER.ID)
+            {
+                iter->slot_accept_data(WORKER);
+            }
         }
     }
 }

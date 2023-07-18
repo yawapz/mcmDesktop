@@ -12,8 +12,8 @@ gui_farm_list_area::gui_farm_list_area(QWidget *parent)
     this->main_area = new QVBoxLayout();
     this->top_button_panel = new QWidget();
     this->grand_info_panel = new QWidget();
-    this->text_button_panel = new QHBoxLayout();
-    this->sort_button_panel = new QHBoxLayout();
+    //this->text_button_panel = new QHBoxLayout();
+    //this->sort_button_panel = new QHBoxLayout();
     this->v_rig_main_panel_widget = new QScrollArea();
     this->rig_info_panel = new QHBoxLayout();
 
@@ -77,8 +77,8 @@ gui_farm_list_area::~gui_farm_list_area()
     this->main_area->deleteLater();
     this->top_button_panel->deleteLater();
     this->grand_info_panel->deleteLater();
-    this->text_button_panel->deleteLater();
-    this->sort_button_panel->deleteLater();
+    //this->text_button_panel->deleteLater();
+    //this->sort_button_panel->deleteLater();
     this->v_rig_main_panel_widget->deleteLater();
     this->rig_info_panel->deleteLater();
     this->farm_info_arr->deleteLater();
@@ -358,7 +358,7 @@ bool gui_farm_list_area::eventFilter(QObject *obj, QEvent *event)
 
             } else if (type == QEvent::MouseButtonPress)
             {
-                connect(this, SIGNAL(signal_workerinfo_sender(QString)), this->farm_info_arr, SIGNAL(signal_find_widget(QString)));
+                connect(this, SIGNAL(signal_workerinfo_sender(QString)), this->farm_info_arr, SIGNAL(signal_find_widget(QString)), Qt::UniqueConnection);
                 connect(this, SIGNAL(signal_exit_prog()), this->farm_info_arr, SIGNAL(signal_exit_prog()));
                 if(!eventFilterblock)
                 {
@@ -453,180 +453,208 @@ void gui_farm_list_area::slot_emit_data_req()
 
 void gui_farm_list_area::H_block_refresh()
 {
-    total_rig_panel->setText(QString::number(this->data.getTotal_count_WORKERs()) + "\nWORKERS");
-    total_gpu_panel->setText(QString::number(this->data.getTotal_count_GPU()) + "\nGPU");
-    QString power_value = "";
-    long double int_power = this->data.getTotal_power_usage();
-    if(int_power > 1000)
-    {
-        int_power /= 1000;
-        power_value = " kW";
-    }
-    else
-    {
-        power_value = " W";
-    }
-    total_power_usage_panel->setText(QString::number(int_power,'f', 2) + power_value + "\nCONSUMPTION");
-    // Проверка на новые
-    for (auto algo : this->data.getSpeed_pair_list())
-    {
-        QString value = "";
-        long double int_speed = algo.second;
-        if(algo.second >= 1000 && algo.second < 1000000)
-        {
-            int_speed /= 1000;
-            value = " kH/s";
-        }
-        else if(algo.second >= 100000 && algo.second < 1000000000)
-        {
-            int_speed /= 1000000;
-            value = " Mh/s";
-        }
-        else if(algo.second >= 100000000 && algo.second < 1000000000000)
-        {
-            int_speed /= 1000000000;
-            value = " Gh/s";
-        }
-        else
-        {
-            value = " H/s";
-        }
-        bool isFind = false;
-        for (auto& iter : H_block_widgets)
-        {
-            if(iter.second.first.contains(algo.first))
-            {
-                iter.first->setText(QString::number(int_speed, 'f', 2) + value + "\n" + algo.first);
-                isFind = true;
-                iter.second.first = algo.first;
-                iter.second.second = algo.second;
-            }
-        }
-        if(!isFind && algo.second > 0)
-        {
-            QLabel *algo_speed = new QLabel();
-            algo_speed->setFixedHeight(label_fix_h);
-            algo_speed->setFixedWidth(label_fix_w);
-            algo_speed->setAlignment(Qt::AlignmentFlag::AlignCenter);
-            algo_speed->setStyleSheet(block_style);
-            algo_speed->setText(QString::number(int_speed, 'f', 2) + value + "\n" + algo.first);
-            H_block_widgets.push_back(QPair(algo_speed, algo));
-            H_block->addWidget(algo_speed);
-            ++count_panel_obj;
-        }
-    }
-    // Проверка на отсутствие виджета
+    delete H_block;
     for (auto& iter : H_block_widgets)
     {
-        bool isF = false;
-        for (auto& algos : data.getSpeed_pair_list())
-        {
-            if(iter.second.first.contains(algos.first))
-            {
-                isF = true;
-                break;
-            }
-        }
-        // Проверка на нулевую скорость
-        if(isF)
-        {
-            if(iter.second.second == 0)
-            {
-                for(int i = 0; i < H_block_widgets.size(); ++i)
-                {
-                    if(iter.second.first == H_block_widgets[i].second.first)
-                    {
-                        H_block->removeWidget(H_block_widgets[i].first);
-                        H_block_widgets[i].first->deleteLater();
-                        H_block_widgets.removeAt(i);
-                        --count_panel_obj;
-                        break;
-                    }
-                }
-            }
-        }
+        delete iter.first;
+    }
+    H_block_widgets.clear();
+    build_grand_info_panel();
 
-        if(!isF)
-        {
-            for(int i = 0; i < H_block_widgets.size(); ++i)
-            {
-                H_block->removeWidget(H_block_widgets[i].first);
-                H_block_widgets[i].first->deleteLater();
-                H_block_widgets.removeAt(i);
-                --count_panel_obj;
-                break;
-            }
-        }
-    }
 
-    //Определим высоту контейнера
-    int factor = count_panel_obj / 8;
-    if(factor > 0)
-    {
-        if(count_panel_obj % 8 != 0)
-        ++factor;
-    }
-    else if (factor < 1)
-    {
-        factor = 1;
-    }
-    for (int var = 0; var < factor; ++var)
-    {
-        H_block->setRowMinimumHeight(var, 80);
-    }
-    this->grand_info_panel->setFixedHeight(grand_panel_base_height * factor);
+
+//    this->data.counting_speed();
+//    this->data.counting_GPUs();
+//    this->data.counting_power_usage();
+//    this->data.counting_rigs();
+
+//    total_rig_panel->setText(QString::number(this->data.getTotal_count_WORKERs()) + "\nWORKERS");
+//    total_gpu_panel->setText(QString::number(this->data.getTotal_count_GPU()) + "\nGPU");
+//    QString power_value = "";
+//    long double int_power = this->data.getTotal_power_usage();
+//    if(int_power > 1000)
+//    {
+//        int_power /= 1000;
+//        power_value = " kW";
+//    }
+//    else
+//    {
+//        power_value = " W";
+//    }
+//    total_power_usage_panel->setText(QString::number(int_power,'f', 2) + power_value + "\nCONSUMPTION");
+//    // Проверка на новые
+//    for (auto algo : this->data.getSpeed_pair_list())
+//    {
+//        QString value = "";
+//        long double int_speed = algo.second;
+//        if(algo.second >= 1000 && algo.second < 1000000)
+//        {
+//            int_speed /= 1000;
+//            value = " kH/s";
+//        }
+//        else if(algo.second >= 100000 && algo.second < 1000000000)
+//        {
+//            int_speed /= 1000000;
+//            value = " Mh/s";
+//        }
+//        else if(algo.second >= 100000000 && algo.second < 1000000000000)
+//        {
+//            int_speed /= 1000000000;
+//            value = " Gh/s";
+//        }
+//        else
+//        {
+//            value = " H/s";
+//        }
+//        bool isFind = false;
+//        for (auto& iter : H_block_widgets)
+//        {
+//            if(iter.second.first.contains(algo.first))
+//            {
+//                iter.first->setText(QString::number(int_speed, 'f', 2) + value + "\n" + algo.first);
+//                isFind = true;
+//                iter.second.first = algo.first;
+//                iter.second.second = algo.second;
+//            }
+//        }
+//        if(!isFind && algo.second > 0)
+//        {
+//            QLabel *algo_speed = new QLabel();
+//            algo_speed->setFixedHeight(label_fix_h);
+//            algo_speed->setFixedWidth(label_fix_w);
+//            algo_speed->setAlignment(Qt::AlignmentFlag::AlignCenter);
+//            algo_speed->setStyleSheet(block_style);
+//            algo_speed->setText(QString::number(int_speed, 'f', 2) + value + "\n" + algo.first);
+//            H_block_widgets.push_back(QPair(algo_speed, algo));
+//            H_block->addWidget(algo_speed);
+//            ++count_panel_obj;
+//        }
+//    }
+//    // Проверка на отсутствие виджета
+//    for (auto& iter : H_block_widgets)
+//    {
+//        bool isF = false;
+//        for (auto& algos : data.getSpeed_pair_list())
+//        {
+//            if(iter.second.first.contains(algos.first))
+//            {
+//                isF = true;
+//                break;
+//            }
+//        }
+//        // Проверка на нулевую скорость
+//        if(isF)
+//        {
+//            if(iter.second.second == 0)
+//            {
+//                for(int i = 0; i < H_block_widgets.size(); ++i)
+//                {
+//                    if(iter.second.first == H_block_widgets[i].second.first)
+//                    {
+//                        H_block->removeWidget(H_block_widgets[i].first);
+//                        H_block_widgets[i].first->deleteLater();
+//                        H_block_widgets.removeAt(i);
+//                        --count_panel_obj;
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+
+//        if(!isF)
+//        {
+//            for(int i = 0; i < H_block_widgets.size(); ++i)
+//            {
+//                H_block->removeWidget(H_block_widgets[i].first);
+//                H_block_widgets[i].first->deleteLater();
+//                H_block_widgets.removeAt(i);
+//                --count_panel_obj;
+//                break;
+//            }
+//        }
+//    }
+
+//    //Определим высоту контейнера
+//    int factor = count_panel_obj / 8;
+//    if(factor > 0)
+//    {
+//        if(count_panel_obj % 8 != 0)
+//        ++factor;
+//    }
+//    else if (factor < 1)
+//    {
+//        factor = 1;
+//    }
+//    for (int var = 0; var < factor; ++var)
+//    {
+//        H_block->setRowMinimumHeight(var, 80);
+//    }
+//    this->grand_info_panel->setFixedHeight(grand_panel_base_height * factor);
 }
 
 void gui_farm_list_area::v_rig_refresh()
 {
-    // Вставить новые виджеты
-    for (auto &iter : this->data.getRIGS())
-    {
-      bool isFind = false;
-      for (auto& iter2 : v_rig_main_panel_widget_container)
-      {
-        if(iter2->ID == iter.ID)
-        {
-            isFind = true;
-            emit signal_update_worker(iter);
-            break;
-        }
-      }
-      if(!isFind)
-      {
-          gui_farm_list_worker *WORKER = new gui_farm_list_worker(iter);
-          QObject::connect(this, SIGNAL(signal_update_worker(user_data::WORKER)), WORKER, SIGNAL(signal_inc_data(user_data::WORKER)));
-          WORKER->main_container->setAttribute(Qt::WA_Hover);
-          WORKER->main_container->installEventFilter(this);
-          v_rig_main_panel_widget_container.push_back(WORKER);
-          v_rig_main_panel->addWidget(WORKER->main_container);
-      }
-    }
-    // Удалить отсутствующие виджеты
-    QList<unsigned short int> idxs;
-    unsigned short int index = 0;
+    //delete v_rig_main_panel_widget;
+    delete v_rig_main_panel;
     for (auto& iter : v_rig_main_panel_widget_container)
     {
-        bool isF = false;
-        for (auto& iter2 : data.getRIGS())
-        {
-            if(iter->ID == iter2.ID)
-            {
-                isF = true;
-                break;
-            }
-        }
-        if(!isF)
-        {
-            v_rig_main_panel->removeWidget(iter->main_container);
-            iter->deleteLater();
-            idxs.push_back(index);
-        }
-        ++index;
+        delete iter;
     }
-    for (auto& i : idxs)
-    {
-        v_rig_main_panel_widget_container.removeAt(i);
-    }
+    v_rig_main_panel_widget_container.clear();
+    build_v_rig_panel();
+
+//    // Вставить новые виджеты
+//    for (auto &iter : this->data.getRIGS())
+//    {
+//      bool isFind = false;
+//      for (auto& iter2 : v_rig_main_panel_widget_container)
+//      {
+//        if(iter2->ID == iter.ID)
+//        {
+//            isFind = true;
+//            emit signal_update_worker(iter);
+//            break;
+//        }
+//      }
+//      if(!isFind)
+//      {
+//          gui_farm_list_worker *WORKER = new gui_farm_list_worker(iter);
+//          QObject::connect(this, SIGNAL(signal_update_worker(user_data::WORKER)), WORKER, SIGNAL(signal_inc_data(user_data::WORKER)));
+//          WORKER->main_container->setAttribute(Qt::WA_Hover);
+//          WORKER->main_container->installEventFilter(this);
+//          v_rig_main_panel_widget_container.push_back(WORKER);
+//          v_rig_main_panel->addWidget(WORKER->main_container);
+//      }
+//    }
+//    // Удалить отсутствующие виджеты
+//    QList<unsigned short int> idxs;
+//    unsigned short int index = 0;
+//    for (auto& iter : v_rig_main_panel_widget_container)
+//    {
+//        bool isF = false;
+//        for (auto& iter2 : data.getRIGS())
+//        {
+//            if(iter->ID == iter2.ID)
+//            {
+//                isF = true;
+//                break;
+//            }
+//        }
+//        if(!isF)
+//        {
+//            v_rig_main_panel->removeWidget(iter->main_container);
+//            iter->deleteLater();
+//            idxs.push_back(index);
+//        }
+//        ++index;
+//    }
+//    for (auto& i : idxs)
+//    {
+//        v_rig_main_panel_widget_container.removeAt(i);
+//    }
+//    std::sort(v_rig_main_panel_widget_container.begin(), v_rig_main_panel_widget_container.end(), [](gui_farm_list_worker* f, gui_farm_list_worker* s)
+//    {
+//        return f->main_container->children().size() > s->main_container->children().size();
+//    });
 }
 

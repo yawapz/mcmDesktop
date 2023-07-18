@@ -44,8 +44,8 @@ private:
     QVBoxLayout* main_area;
     QWidget* top_button_panel;
     QWidget* grand_info_panel;
-    QHBoxLayout* text_button_panel; // Дальнейшая интеграция
-    QHBoxLayout* sort_button_panel; // Дальнейшая интеграция
+//    QHBoxLayout* text_button_panel; // Дальнейшая интеграция
+//    QHBoxLayout* sort_button_panel; // Дальнейшая интеграция
 
     QScrollArea* v_rig_main_panel_widget;
     QVector<gui_farm_list_worker*> v_rig_main_panel_widget_container;

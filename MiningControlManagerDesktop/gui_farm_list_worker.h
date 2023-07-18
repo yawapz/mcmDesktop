@@ -22,26 +22,17 @@ public:
 //private:
     QWidget *main_container;
     QHBoxLayout *lay;
-
-    QWidget *sec_1;
-    QHBoxLayout *sec_1_lay;
-    QHBoxLayout *sec_2;
-    QWidget *sec_3;
-    QHBoxLayout *sec_3_lay;
-    QHBoxLayout *sec_4;
-
     bool status;
-
-    QLabel *name;
-    QLabel *time;
-    QLabel *miner;
-    QLabel *S;
-    QLabel *R;
-    QLabel *ALG;
-    QLabel *power;
-    QLabel *fan_speed;
 private:
+    QFont fontt;
+    QFont fontt2;
     unsigned short int count_gpu;
+    void build_main_cont();
+    void build_lay();
+    void build_sec_1(user_data::WORKER&);
+    void build_sec_2(user_data::WORKER&);
+    void build_sec_3(user_data::WORKER&);
+    void build_sec_4(user_data::WORKER&);
 
 signals:
     void signal_inc_data(user_data::WORKER);

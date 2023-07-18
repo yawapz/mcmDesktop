@@ -35,7 +35,9 @@ private:
     QString login;
     QString password;
     user_data data;
-    QList<QPair<QString, QWidget*>> showArr;
+    QList<QString> idArr;
+    QList<gui_farm_info_worker*> widgetArr;
+    void dataSender();
 };
 
 #endif // GUI_FARM_INFO_AREA_H

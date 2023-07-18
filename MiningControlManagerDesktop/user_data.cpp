@@ -90,16 +90,29 @@ void user_data::counting_speed()
             }
             else
             {
+                bool isF = false;
+                bool isF2 = false;
                 for(auto &iter : this->speed_pair_list)
                 {
+
                     if(speed_pair.first == iter.first)
                     {
                         iter.second += speed_pair.second;
+                        isF = true;
                     }
                     if(speed_pair2.first == iter.first)
                     {
                         iter.second += speed_pair2.second;
+                        isF2 = true;
                     }
+                }
+                if(!isF)
+                {
+                    speed_pair_list.push_back(speed_pair);
+                }
+                if(!isF2)
+                {
+                    speed_pair_list.push_back(speed_pair2);
                 }
             }
         }
