@@ -3,11 +3,11 @@
 server::server(int port)
 {
     this->DB = QSqlDatabase::addDatabase("QPSQL",  "main");
-    DB.setHostName("***********************");
-    DB.setDatabaseName("************");
+    DB.setHostName("***********your db host*************");
+    DB.setDatabaseName("*****your db name*******");
     DB.setPort(5432);
-    DB.setUserName("************************");
-    DB.setPassword("****************************************");
+    DB.setUserName("*****your db username******");
+    DB.setPassword("********your user password****************");
 
     if(DB.open())
     {
@@ -18,8 +18,7 @@ server::server(int port)
         qDebug() <<"\033[31m" << "The db was not connected!" << Qt::endl;
     }
 
-    //this->listen(QHostAddress::AnyIPv4, port);
-    this->listen(QHostAddress::LocalHost, port);
+    this->listen(QHostAddress::AnyIPv4, port);
     this->port = port;
 
     QObject::connect(this, SIGNAL(newConnection()), this, SLOT(slot_new_connection()));
@@ -60,131 +59,135 @@ void server::slot_routing()
     {
         WORKER worker;
         stream >> worker;
-        qDebug() << QDate::currentDate().toString() + " accepted data from " + worker.ID;
+        if(!worker.str_json.isEmpty() && (worker.ID.length() > 0) && worker.status)
+        {
+            QString format = "dd.MM.yyyy hh:mm:ss.z";
+            qDebug() << QDateTime::currentDateTime().toString(format) << "accepted data from " + worker.ID << Qt::endl;
 
-        QString query_str = "SELECT worker_id FROM \"WORKERS\" WHERE worker_id = \'" + worker.ID + "\';";
-        QSqlQuery query(this->DB);
-        if(!query.exec(query_str))
-        {
-            qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
-        }
-        else
-        {
-            query.first();
-            if(query.value(0).toString() == worker.ID)
+            QString query_str = "SELECT worker_id FROM \"WORKERS\" WHERE worker_id = \'" + worker.ID + "\';";
+            QSqlQuery query(this->DB);
+            if(!query.exec(query_str))
             {
-
+                qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
+            }
+            else
+            {
+                query.first();
+                if(query.value(0).toString() == worker.ID)
                 {
-//                QString gpu_arr = "";
-//                for (int i = 0; i < worker.devices.size(); ++i)
-//                {
-//                    QString tmp = "";
-//                    tmp+= "(";
-//                    tmp += "\'" + worker.devices[i].name + "\', ";
-//                    tmp += "\'" + worker.devices[i].bus_id + "\', ";
-//                    tmp += "\'" + worker.devices[i].vendor + "\', ";
-//                    tmp += "\'" + worker.devices[i].total_memory + "\', ";
-//                    tmp += "\'" + worker.devices[i].VBIOS_version + "\', ";
-//                    tmp += "\'" + worker.devices[i].min_pl + "\', ";
-//                    tmp += "\'" + worker.devices[i].default_pl + "\', ";
-//                    tmp += "\'" + worker.devices[i].max_pl + "\', ";
-//                    tmp += QString::number(worker.devices[i].gpu_id) + ", ";
-//                    tmp += QString::number(worker.devices[i].fan_speed) + ", ";
-//                    tmp += QString::number(worker.devices[i].core_clock) + ", ";
-//                    tmp += QString::number(worker.devices[i].memory_clock) + ", ";
-//                    tmp += QString::number(worker.devices[i].power_usage) + ", ";
-//                    tmp += QString::number(worker.devices[i].temperature) + ", ";
-//                    tmp += QString::number(worker.devices[i].max_core_freq) + ", ";
-//                    tmp += QString::number(worker.devices[i].max_mem_freq) + ", ";
-//                    tmp += QString::number(worker.devices[i].speed) + ", ";
-//                    tmp += QString::number(worker.devices[i].speed2) + ", ";
-//                    tmp += QString::number(worker.devices[i].accepted_shares) + ", ";
-//                    tmp += QString::number(worker.devices[i].accepted_shares2) + ", ";
-//                    tmp += QString::number(worker.devices[i].rejected_shares) + ", ";
-//                    tmp += QString::number(worker.devices[i].rejected_shares2) + ", ";
-//                    tmp += QString::number(worker.devices[i].stale_shares) + ", ";
-//                    tmp += QString::number(worker.devices[i].stale_shares2) + ", ";
-//                    tmp += QString::number(worker.devices[i].invalid_shares) + ", ";
-//                    tmp += QString::number(worker.devices[i].invalid_shares2) + ", ";
-//                    tmp += QString::number(worker.devices[i].memory_temperature) + ", ";
-//                    tmp += QString::number(worker.devices[i].set_fan_speed) + ", ";
-//                    tmp += QString::number(worker.devices[i].set_core) + ", ";
-//                    tmp += QString::number(worker.devices[i].set_mem) + ", ";
-//                    if(i < worker.devices.size() - 1)
-//                    {
-//                        tmp += QString::number(worker.devices[i].set_pl);
-//                        tmp += ")::gpu, ";
-//                    }
-//                    else if(i == worker.devices.size() - 1)
-//                    {
-//                        tmp += QString::number(worker.devices[i].set_pl);
-//                        tmp += ")::gpu";
-//                    }
-//                    gpu_arr.push_back(tmp);
-//                }
 
-//                QString query_str2 = "INSERT INTO worker_" + worker.ID + ""
-//                " VALUES "
-//                "("
-//                        "ARRAY[" + gpu_arr + "], "
-//                        "" + QString::number(worker.startup) + ", "
-//                        "\'" + worker.LA1 + "\', "
-//                        "\'" + worker.LA5 + "\', "
-//                        "\'" + worker.LA15 + "\', "
-//                        "\'" + worker.core_version + "\', "
-//                        "\'" + worker.nvidia_version + "\', "
-//                        "\'" + worker.amd_version + "\', "
-//                        "\'" + worker.motherboard_data + "\', "
-//                        "\'" + worker.CPU_info + "\', "
-//                        "\'" + worker.CPU_temperature + "\', "
-//                        "\'" + worker.disk_model + "\', "
-//                        "\'" + worker.disk_size + "\', "
-//                        "\'" + worker.disk_free_space + "\', "
-//                        "\'" + worker.RAM_total + "\', "
-//                        "\'" + worker.RAM_used + "\', "
-//                        "\'" + worker.RAM_free + "\', "
-//                        "\'" + worker.MAC + "\', "
-//                        "\'" + worker.local_ip + "\', "
-//                        "\'" + worker.ext_ip + "\', "
-//                        "\'" + worker.miner + "\', "
-//                        "\'" + worker.algorithm + "\', "
-//                        "\'" + worker.algorithm2 + "\', "
-//                        "\'" + worker.server + "\', "
-//                        "\'" + worker.server2 + "\', "
-//                        "\'" + worker.user + "\', "
-//                        "\'" + worker.user2 + "\', "
-//                        "" + QString::number(worker.total_accepted_shares) + ", "
-//                        "" + QString::number(worker.total_accepted_shares2) + ", "
-//                        "" + QString::number(worker.total_invalid_shares) + ", "
-//                        "" + QString::number(worker.total_invalid_shares2) + ", "
-//                        "" + QString::number(worker.total_rejected_shares) + ", "
-//                        "" + QString::number(worker.total_rejected_shares2) + ", "
-//                        "" + QString::number(worker.total_stale_shares) + ", "
-//                        "" + QString::number(worker.total_stale_shares2) + ", "
-//                        "" + QString::number(worker.uptime) + ", "
-//                        "\'" + worker.name + "\', "
-//                        "\'" + worker.ID + "\', "
-//                        "" + QString::number(worker.electricity_cost, 'f', 2) + ", "
-//                        "\'" + worker.version + "\', "
-//                        "" + "true" + ", "
-//                        "" + QString::number(worker.last_online) + ", "
-//                        "current_timestamp"
-//                ");";
-                }
-                QString query_str2 = "INSERT INTO \"worker_" + worker.ID + "\""
-                " (id, startup, status, last_online, inc_timestamp, json) VALUES "
-                "("
-                        "\'" + worker.ID + "\', "
-                        "" + QString::number(worker.startup) + ", "
-                        "" + "true" + ", "
-                        "" + QString::number(worker.last_online) + ", "
-                        "current_timestamp, "
-                        "\'" + worker.str_json + "\'"
-                ");";
-                if(!query.exec(query_str2))
-                {
-                    qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
-                    qDebug() << query.lastQuery();
+                    {
+    //                QString gpu_arr = "";
+    //                for (int i = 0; i < worker.devices.size(); ++i)
+    //                {
+    //                    QString tmp = "";
+    //                    tmp+= "(";
+    //                    tmp += "\'" + worker.devices[i].name + "\', ";
+    //                    tmp += "\'" + worker.devices[i].bus_id + "\', ";
+    //                    tmp += "\'" + worker.devices[i].vendor + "\', ";
+    //                    tmp += "\'" + worker.devices[i].total_memory + "\', ";
+    //                    tmp += "\'" + worker.devices[i].VBIOS_version + "\', ";
+    //                    tmp += "\'" + worker.devices[i].min_pl + "\', ";
+    //                    tmp += "\'" + worker.devices[i].default_pl + "\', ";
+    //                    tmp += "\'" + worker.devices[i].max_pl + "\', ";
+    //                    tmp += QString::number(worker.devices[i].gpu_id) + ", ";
+    //                    tmp += QString::number(worker.devices[i].fan_speed) + ", ";
+    //                    tmp += QString::number(worker.devices[i].core_clock) + ", ";
+    //                    tmp += QString::number(worker.devices[i].memory_clock) + ", ";
+    //                    tmp += QString::number(worker.devices[i].power_usage) + ", ";
+    //                    tmp += QString::number(worker.devices[i].temperature) + ", ";
+    //                    tmp += QString::number(worker.devices[i].max_core_freq) + ", ";
+    //                    tmp += QString::number(worker.devices[i].max_mem_freq) + ", ";
+    //                    tmp += QString::number(worker.devices[i].speed) + ", ";
+    //                    tmp += QString::number(worker.devices[i].speed2) + ", ";
+    //                    tmp += QString::number(worker.devices[i].accepted_shares) + ", ";
+    //                    tmp += QString::number(worker.devices[i].accepted_shares2) + ", ";
+    //                    tmp += QString::number(worker.devices[i].rejected_shares) + ", ";
+    //                    tmp += QString::number(worker.devices[i].rejected_shares2) + ", ";
+    //                    tmp += QString::number(worker.devices[i].stale_shares) + ", ";
+    //                    tmp += QString::number(worker.devices[i].stale_shares2) + ", ";
+    //                    tmp += QString::number(worker.devices[i].invalid_shares) + ", ";
+    //                    tmp += QString::number(worker.devices[i].invalid_shares2) + ", ";
+    //                    tmp += QString::number(worker.devices[i].memory_temperature) + ", ";
+    //                    tmp += QString::number(worker.devices[i].set_fan_speed) + ", ";
+    //                    tmp += QString::number(worker.devices[i].set_core) + ", ";
+    //                    tmp += QString::number(worker.devices[i].set_mem) + ", ";
+    //                    if(i < worker.devices.size() - 1)
+    //                    {
+    //                        tmp += QString::number(worker.devices[i].set_pl);
+    //                        tmp += ")::gpu, ";
+    //                    }
+    //                    else if(i == worker.devices.size() - 1)
+    //                    {
+    //                        tmp += QString::number(worker.devices[i].set_pl);
+    //                        tmp += ")::gpu";
+    //                    }
+    //                    gpu_arr.push_back(tmp);
+    //                }
+
+    //                QString query_str2 = "INSERT INTO worker_" + worker.ID + ""
+    //                " VALUES "
+    //                "("
+    //                        "ARRAY[" + gpu_arr + "], "
+    //                        "" + QString::number(worker.startup) + ", "
+    //                        "\'" + worker.LA1 + "\', "
+    //                        "\'" + worker.LA5 + "\', "
+    //                        "\'" + worker.LA15 + "\', "
+    //                        "\'" + worker.core_version + "\', "
+    //                        "\'" + worker.nvidia_version + "\', "
+    //                        "\'" + worker.amd_version + "\', "
+    //                        "\'" + worker.motherboard_data + "\', "
+    //                        "\'" + worker.CPU_info + "\', "
+    //                        "\'" + worker.CPU_temperature + "\', "
+    //                        "\'" + worker.disk_model + "\', "
+    //                        "\'" + worker.disk_size + "\', "
+    //                        "\'" + worker.disk_free_space + "\', "
+    //                        "\'" + worker.RAM_total + "\', "
+    //                        "\'" + worker.RAM_used + "\', "
+    //                        "\'" + worker.RAM_free + "\', "
+    //                        "\'" + worker.MAC + "\', "
+    //                        "\'" + worker.local_ip + "\', "
+    //                        "\'" + worker.ext_ip + "\', "
+    //                        "\'" + worker.miner + "\', "
+    //                        "\'" + worker.algorithm + "\', "
+    //                        "\'" + worker.algorithm2 + "\', "
+    //                        "\'" + worker.server + "\', "
+    //                        "\'" + worker.server2 + "\', "
+    //                        "\'" + worker.user + "\', "
+    //                        "\'" + worker.user2 + "\', "
+    //                        "" + QString::number(worker.total_accepted_shares) + ", "
+    //                        "" + QString::number(worker.total_accepted_shares2) + ", "
+    //                        "" + QString::number(worker.total_invalid_shares) + ", "
+    //                        "" + QString::number(worker.total_invalid_shares2) + ", "
+    //                        "" + QString::number(worker.total_rejected_shares) + ", "
+    //                        "" + QString::number(worker.total_rejected_shares2) + ", "
+    //                        "" + QString::number(worker.total_stale_shares) + ", "
+    //                        "" + QString::number(worker.total_stale_shares2) + ", "
+    //                        "" + QString::number(worker.uptime) + ", "
+    //                        "\'" + worker.name + "\', "
+    //                        "\'" + worker.ID + "\', "
+    //                        "" + QString::number(worker.electricity_cost, 'f', 2) + ", "
+    //                        "\'" + worker.version + "\', "
+    //                        "" + "true" + ", "
+    //                        "" + QString::number(worker.last_online) + ", "
+    //                        "current_timestamp"
+    //                ");";
+                    }
+                    QString query_str2 = "INSERT INTO \"worker_" + worker.ID + "\""
+                    " (id, startup, status, last_online, inc_timestamp, json) VALUES "
+                    "("
+                            "\'" + worker.ID + "\', "
+                            "" + QString::number(worker.startup) + ", "
+                            "" + "true" + ", "
+                            "" + QString::number(worker.last_online) + ", "
+                            "current_timestamp, "
+                            "\'" + worker.str_json + "\'"
+                    ");";
+                    if(!query.exec(query_str2))
+                    {
+                        qDebug() << "Error Query - " << query.lastError().type() << " - " << query.lastError().text();
+                        qDebug() << query.lastQuery();
+                    }
                 }
             }
         }

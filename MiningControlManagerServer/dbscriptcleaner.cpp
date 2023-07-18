@@ -4,11 +4,11 @@ DbScriptCleaner::DbScriptCleaner(QObject *parent)
     : QObject{parent}
 {
     this->DB = QSqlDatabase::addDatabase("QPSQL", "cleaner");
-    DB.setHostName("***********************");
-    DB.setDatabaseName("************");
+    DB.setHostName("***********your db host*************");
+    DB.setDatabaseName("*****your db name*******");
     DB.setPort(5432);
-    DB.setUserName("************************");
-    DB.setPassword("****************************************");
+    DB.setUserName("*****your db username******");
+    DB.setPassword("********your user password****************");
 
     if(DB.open())
     {

@@ -4,11 +4,11 @@ DbScriptInspector::DbScriptInspector(QObject *parent)
     : QObject{parent}
 {
     this->DB = QSqlDatabase::addDatabase("QPSQL", "inspector");
-    DB.setHostName("***********************");
-    DB.setDatabaseName("************");
+    DB.setHostName("***********your db host*************");
+    DB.setDatabaseName("*****your db name*******");
     DB.setPort(5432);
-    DB.setUserName("************************");
-    DB.setPassword("****************************************");
+    DB.setUserName("*****your db username******");
+    DB.setPassword("********your user password****************");
 
     if(DB.open())
     {
@@ -57,7 +57,7 @@ void DbScriptInspector::slot_go()
                 while(query_workers.next())
                 {
                     QString query_string = "UPDATE \"worker_" + query_workers.value(field_number).toString() + "\" "
-                                           "SET status=false WHERE now() - inc_timestamp > interval '1 minute';";
+                                           "SET status=false WHERE now()::timestamp - inc_timestamp > interval '1 minute';";
                     QSqlQuery query(this->DB);
                     if(!query.exec(query_string))
                     {
@@ -67,8 +67,8 @@ void DbScriptInspector::slot_go()
                     else
                     {
                         QString query_string2 = "UPDATE \"worker_" + query_workers.value(field_number).toString() + "\" "
-                                                "SET last_online=EXTRACT(EPOCH FROM (now() - inc_timestamp)::time) "
-                                                "WHERE now() - inc_timestamp > interval '1 minute';";
+                                                "SET last_online=EXTRACT(EPOCH FROM (now()::timestamp - inc_timestamp)) "
+                                                "WHERE now()::timestamp - inc_timestamp > interval '1 minute';";
                         QSqlQuery query2(this->DB);
                         if(!query2.exec(query_string2))
                         {
